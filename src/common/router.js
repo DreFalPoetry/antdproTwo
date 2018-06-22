@@ -168,6 +168,21 @@ export const getRouterData = app => {
     '/user/register-result': {
       component: dynamicWrapper(app, [], () => import('../routes/User/RegisterResult')),
     },
+    '/advertiser/advReport': {
+        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/Report')),
+    },
+    '/advertiser/advStatement': {
+        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/Statement')),
+    },
+    '/advertiser/advInvRec': {
+        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/InvoiceRecord')),
+    },
+    '/advertiser/advPaymentColle': {
+        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/PaymentCollection')),
+    },
+    '/advertiser/advCredit': {
+        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/Credit')),
+    },
     // '/user/:id': {
     //   component: dynamicWrapper(app, [], () => import('../routes/User/SomeComponent')),
     // },
