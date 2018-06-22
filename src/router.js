@@ -21,12 +21,12 @@ function RouterConfig({ history, app }) {
     <LocaleProvider locale={zhCN}>
       <ConnectedRouter history={history}>
         <Switch>
-         <AuthorizedRoute
+         {/* <AuthorizedRoute
             path="/user"
             render={props => <UserLayout {...props} />}
             authority={['guster']}
             redirectPath="/"
-          />
+          /> */}
           <Route path="/user" component={UserLayout} />
           <AuthorizedRoute
             path="/"
