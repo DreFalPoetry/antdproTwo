@@ -2,6 +2,7 @@ import React, { Component ,Fragment} from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert} from 'antd';
 import commonStyle from './Report.less';
+import InvoiceModal from './GenerateInvoiceModal';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -16,7 +17,8 @@ export default class AdvStatement extends Component {
             radioValue:1,
             selectedRowKeys: [],
             selectedRows:[],
-            totalInvoiceAmount:[]
+            totalInvoiceAmount:[],
+            invoiceModalvisible:false
         };
         this.columns = [{
                 title: 'Campaign',
@@ -114,8 +116,12 @@ export default class AdvStatement extends Component {
         });
     }
 
+    //批量选择操作 1--Approved 2--Rejected 3--Invoiced
     selectOption = (value) => {
         console.log(`selected ${value}`);
+        if(value == 3){
+            this.setState({ invoiceModalvisible: true });
+        }
     }
 
     selectTableRow =  (selectedRowKeys, selectedRows) => {
@@ -156,6 +162,26 @@ export default class AdvStatement extends Component {
             selectedRows:[],
             totalInvoiceAmount:[]
         })
+    }
+
+    cancelGenerate = () => {
+        this.setState({ invoiceModalvisible: false });
+    }
+
+    createInvoice = () => {
+        const form = this.formRef.props.form;
+        form.validateFields((err, values) => {
+          if (err) {
+            return;
+          }
+          console.log('Received values of form: ', values);
+          form.resetFields();
+          this.setState({ invoiceModalvisible: false });
+        });
+    }
+
+    saveFormRef = (formRef) => {
+        this.formRef = formRef;
     }
 
     render() {
@@ -222,9 +248,9 @@ export default class AdvStatement extends Component {
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Batch Actions">
                                     <Select style={{ width: 230 }} onChange={this.selectOption}>
-                                        <Option value="Generate">Generate Invoice</Option>
-                                        <Option value="Approve">Approve</Option>
-                                        <Option value="Reject">Reject</Option>
+                                        <Option value="3">Generate Invoice</Option>
+                                        <Option value="1">Approve</Option>
+                                        <Option value="2">Reject</Option>
                                     </Select>
                                 </FormItem>
                             </Col>
@@ -264,6 +290,12 @@ export default class AdvStatement extends Component {
                     />
                     </Card>
                 </PageHeaderLayout>
+                <InvoiceModal
+                    wrappedComponentRef={this.saveFormRef}
+                    visible={this.state.invoiceModalvisible}
+                    onCancel={this.cancelGenerate}
+                    onCreate={this.createInvoice}
+                />
             </div>
         )
     }

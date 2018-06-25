@@ -60,7 +60,7 @@ export default class AdvInvRecord extends Component {
                 dataIndex: 'remark',
             },,{
                 title: '',
-                dataIndex: 'remark',
+                dataIndex: '',
                 render:() =>{
                     return <div><Button>Destroy</Button><Button>Collect</Button></div> 
                 }
