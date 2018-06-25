@@ -1,0 +1,33 @@
+.searchFormWrapper{
+    :global(.ant-input){
+        width: 230px;
+    }
+    :global(.ant-form-item){
+        margin-bottom: 10px;
+    }
+    :global(.ant-form-item-label){
+        width: 130px;
+        text-align: right;
+    }
+    .searchBtnWrapper{
+        float: right;
+        margin-bottom: 20px;
+    }
+    .linkTypeSelect{
+       :global(.ant-select-selection){
+           border-top-right-radius: 0px;
+           border-bottom-right-radius: 0px;
+           border-right: 0px;
+       }
+       
+    }
+    .linkTypeAutoSelect{
+        :global(.ant-select-search--inline .ant-select-search__field){
+            border-top-left-radius: 0px;
+            border-bottom-left-radius: 0px;
+        }
+        :global(.ant-select-auto-complete.ant-select .ant-input){
+            margin-top: -1px;
+        }
+    }
+}
