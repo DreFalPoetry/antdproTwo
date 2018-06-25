@@ -135,6 +135,24 @@ const proxy = {
       path: '/base/category/list',
     });
   },
+  'GET /api/advReport': mockjs.mock({
+    'code':0,
+    'data|100': [{
+        date:'@date', 
+        'id|+1':1001, 
+        name: '@name',
+        'payout|0.2':0.12,
+        currency:'USD',
+        'totalConv|100-1231': 150, 
+        'frand|1-100.2': 1.12,
+        'revenue|1-100.2':23.23,
+        'cost|1-100.2':34.23,
+        'margin|1-100.2':2.23
+    }],
+    'total':100,
+    'pageSize':20,
+    'pageCurrent':1
+  }),
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));

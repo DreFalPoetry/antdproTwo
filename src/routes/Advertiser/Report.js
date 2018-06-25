@@ -2,12 +2,17 @@ import React, { Component } from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
 import styles from './Report.less';
+import { connect } from 'dva';
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
 
 @Form.create()
+@connect(({ advReport, loading }) => ({
+    advReport,
+    loading: loading.effects['advReport/fetch'],  
+}))
 export default class AdvReoprt extends Component {
     constructor(props) {
         super(props);
@@ -47,46 +52,13 @@ export default class AdvReoprt extends Component {
                 title: 'Margin',
                 dataIndex: 'margin',
             }];
-        this.data = [{
-            "uniqueKey": '1',
-            "date":"2018-06-19",
-            "id":23232,
-            "name":"亚马逊",
-            "payout":"0.52",
-            "currency":"USD",
-            "totalConv":"832",
-            "frand":"8.12%",
-            "revenue":"98.23",
-            "cost":"67.23",
-            "margin":"23.23%"
-        },{
-            "uniqueKey": '2',
-            "date":"2018-06-19",
-            "id":23232,
-            "name":"亚马逊",
-            "payout":"0.52",
-            "currency":"USD",
-            "totalConv":"832",
-            "frand":"8.12%",
-            "revenue":"98.23",
-            "cost":"67.23",
-            "margin":"23.23%"
-        },{
-            "uniqueKey": '3',
-            "date":"2018-06-19",
-            "id":23232,
-            "name":"亚马逊",
-            "payout":"0.52",
-            "currency":"USD",
-            "totalConv":"832",
-            "frand":"8.12%",
-            "revenue":"98.23",
-            "cost":"67.23",
-            "margin":"23.23%"
-        }];
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+        this.props.dispatch({
+            type: 'advReport/fetch',
+        })
+    }
 
     componentWillUnmount() {}
 
@@ -127,6 +99,7 @@ export default class AdvReoprt extends Component {
     render() {
         const { dataSource } = this.state;
         const { getFieldDecorator } = this.props.form;
+        const {dataList} = this.props.advReport;
         return (
             <div>
                 <PageHeaderLayout>
@@ -192,7 +165,7 @@ export default class AdvReoprt extends Component {
                     </div>
                     <Table 
                         columns={this.columns} 
-                        dataSource={this.data} 
+                        dataSource={dataList} 
                         rowKey="uniqueKey"
                         bordered
                     />
