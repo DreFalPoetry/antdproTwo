@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
 import styles from './Report.less';
+import CollectModal from './CollectModal';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -14,7 +15,7 @@ export default class AdvInvRecord extends Component {
         this.state = {
             dataSource: [],
             radioValue:1,
-
+            collectModalvisible:false
         };
         this.columns = [{
                 title: 'Advertiser Name',
@@ -62,7 +63,7 @@ export default class AdvInvRecord extends Component {
                 title: '',
                 dataIndex: '',
                 render:() =>{
-                    return <div><Button>Destroy</Button><Button>Collect</Button></div> 
+                    return <div><Button>Destroy</Button><Button onClick={this.openCollectModal}>Collect</Button></div> 
                 }
             }];
         this.data = [{
@@ -157,6 +158,30 @@ export default class AdvInvRecord extends Component {
         });
     }
 
+    cancelCreat = () => {
+        this.setState({ collectModalvisible: false });
+    }
+
+    createCollection = () => {
+        const form = this.formRef.props.form;
+        form.validateFields((err, values) => {
+          if (err) {
+            return;
+          }
+          console.log('Received values of form: ', values);
+          form.resetFields();
+          this.setState({ collectModalvisible: false });
+        });
+    }
+
+    saveFormRef = (formRef) => {
+        this.formRef = formRef;
+    }
+
+    openCollectModal = () => {
+        this.setState({ collectModalvisible: true });
+    }
+
     render() {
         const { dataSource } = this.state;
         const { getFieldDecorator } = this.props.form;
@@ -230,6 +255,12 @@ export default class AdvInvRecord extends Component {
                     />
                     </Card>
                 </PageHeaderLayout>
+                <CollectModal
+                    wrappedComponentRef={this.saveFormRef}
+                    visible={this.state.collectModalvisible}
+                    onCancel={this.cancelCreat}
+                    onCreate={this.createCollection}             
+                />
             </div>
         )
     }
