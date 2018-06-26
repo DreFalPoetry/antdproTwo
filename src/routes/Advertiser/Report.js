@@ -3,6 +3,7 @@ import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
 import styles from './Report.less';
 import { connect } from 'dva';
+import moment from 'moment';
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -17,9 +18,14 @@ export default class AdvReoprt extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            dataSource: [],
-            radioValue:1,
-
+            dateType:1,
+            advAccountId:null,
+            employeeId:null,
+            startDate:'',
+            endDate:'',
+            keyWords:'',
+            advAccountValue:'',
+            employeeValue:''
         };
         this.columns = [{
                 title: 'Date',
@@ -57,22 +63,43 @@ export default class AdvReoprt extends Component {
     componentDidMount() {
         this.props.dispatch({
             type: 'advReport/fetch',
+            payload:{
+                dateType:0
+            }
         })
     }
 
-    componentWillUnmount() {}
+    componentWillUnmount() {
+        this.props.dispatch({
+            type:'advReport/clear'
+        })
+    }
 
     submitSearch = (e) => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-              console.log('Received values of form: ', values);
+                this.setState({
+                    keyWords:values.keyWords
+                },function(){
+                    this.props.dispatch({
+                        type:'advReport/fetch',
+                        payload:{...this.state}
+                    })
+                    this.props.dispatch({
+                        type:'advReport/asyncListQuery',
+                        payload:{...this.state}
+                    })
+                });
             }
         });
     }
 
     searchEmployeeOrAdvAccount = (type,value) => {
         if(type === 'advAccount'){
+            this.setState({
+                advAccountValue:value,
+            })
             this.props.dispatch({
                 type:'advReport/fetchAdvAccount',
                 payload: {
@@ -80,6 +107,9 @@ export default class AdvReoprt extends Component {
                 },
             });
         }else{
+            this.setState({
+                employeeValue:value,
+            })
             this.props.dispatch({
                 type:'advReport/fetchEmployee',
                 payload: {
@@ -92,28 +122,49 @@ export default class AdvReoprt extends Component {
     selectEmployeeOrAdvAccount = (type,value) => {
         if(type === 'advAccount'){
             this.setState({
-                advAccountId:value
+                advAccountValue:value,
+                advAccountId:value,
             });
         }else{
             this.setState({
+                employeeValue:value,
                 employeeId:value
             });
         }
     }
 
     dateRangeChange = (date, dateString) => {
-        console.log(date, dateString);
+        this.setState({
+            startDate:dateString[0],
+            endDate:dateString[1]
+        })
     }
 
     radioChange = (e) => {
         console.log('radio checked', e.target.value);
         this.setState({
-          radioValue: e.target.value,
+            dateType: e.target.value,
         });
     }
 
+    clearQuery = () => {
+        this.props.form.resetFields();
+        this.props.dispatch({
+            type:'advReport/clearEmployeeAndAdvAccount'
+        })
+        this.setState({
+            startDate:'',
+            endDate:'',
+            keyWords:'',
+            dateType:1,
+            advAccountId:null,
+            employeeId:null,
+            advAccountValue:'',
+            employeeValue:''
+        })
+    }
+
     render() {
-        const { dataSource } = this.state;
         const { getFieldDecorator } = this.props.form;
         const {dataList,employeeList,advAccountList} = this.props.advReport;
         return (
@@ -133,6 +184,7 @@ export default class AdvReoprt extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Advertiser Account">
                                     <AutoComplete
+                                        value={this.state.advAccountValue}
                                         dataSource={advAccountList}
                                         style={{ width: 200 }}
                                         onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
@@ -143,12 +195,15 @@ export default class AdvReoprt extends Component {
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Date Range">
-                                    <RangePicker onChange={this.dateRangeChange} />
+                                    <RangePicker 
+                                        onChange={this.dateRangeChange} 
+                                        value={this.state.startDate?[moment(this.state.startDate), moment(this.state.endDate)]:null}
+                                        />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Display By Date">
-                                    <RadioGroup onChange={this.radioChange} value={this.state.radioValue}>
+                                    <RadioGroup onChange={this.radioChange} value={this.state.dateType}>
                                         <Radio value={1}>Monthly</Radio>
                                         <Radio value={2}>Daily</Radio>
                                     </RadioGroup>
@@ -161,6 +216,7 @@ export default class AdvReoprt extends Component {
                                         <Option value="bank">PM</Option>
                                     </Select>
                                     <AutoComplete
+                                        value={this.state.employeeValue}
                                         className={styles.linkTypeAutoSelect}
                                         dataSource={employeeList}
                                         style={{ width: 200 }}
@@ -173,8 +229,8 @@ export default class AdvReoprt extends Component {
                         </Row>
                         <Row>
                             <div className={styles.searchBtnWrapper}>
-                                <Button type="primary">QUERY</Button>
-                                <Button style={{marginLeft:'10px'}}>RESET</Button>
+                                <Button type="primary" htmlType="submit">QUERY</Button>
+                                <Button style={{marginLeft:'10px'}} onClick={this.clearQuery}>RESET</Button>
                             </div>
                         </Row>
                     </Form>

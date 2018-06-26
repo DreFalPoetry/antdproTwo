@@ -7,8 +7,19 @@ export default {
 
     state: {
         dataList:[],
+        listQuery:{
+            keyWords:'',
+            advAccountId:null,
+            startDate:'',
+            endDate:'',
+            dateType:0,
+            employeeId:null
+        },
+        total:null,
+        pageSize:null,
+        pageCurrent:1,
         employeeList:[],
-        advAccountList:[]
+        advAccountList:[],
     },
 
     effects: {
@@ -73,6 +84,12 @@ export default {
                 dataList:payload,
             };
         },
+        asyncListQuery(state, { payload }) {
+            return {
+                ...state,
+                listQuery:payload,
+            };
+        },
         asyncEmployeeList(state, { payload }) {
             return {
                 ...state,
@@ -85,9 +102,29 @@ export default {
                 advAccountList:payload,
             };
         },
+        clearEmployeeAndAdvAccount() {
+            console.log('sdsd');
+            return {
+                employeeList:[],
+                advAccountList:[],
+            };
+        },
         clear() {
             return {
-                dataList:[]
+                dataList:[],
+                listQuery:{
+                    keyWords:'',
+                    advAccountId:null,
+                    startDate:'',
+                    endDate:'',
+                    dateType:0,
+                    employeeId:null
+                },
+                total:null,
+                pageSize:null,
+                pageCurrent:1,
+                employeeList:[],
+                advAccountList:[],
             };
         },
     },
