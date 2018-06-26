@@ -78,6 +78,14 @@ export async function queryNotices() {
   return request('/api/notices');
 }
 
-export async function queryadvReport() {
-    return request('/api/advReport');
+export async function queryadvReport(params) {
+    return request(`/api/advReport?${stringify(params)}`);
+}
+
+export async function queryEmployee(params) {
+    return request(`/api/employee?${stringify(params)}`);
+}
+
+export async function queryAdvAccount(params) {
+    return request(`/api/advAccount?${stringify(params)}`);
 }

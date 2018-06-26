@@ -1,16 +1,19 @@
-import { queryadvReport } from '../services/api';
+import { queryadvReport,queryEmployee,queryAdvAccount } from '../services/api';
 import {callbackDeal} from '../utils/serviceCallBack';
+import { list } from 'postcss';
 
 export default {
     namespace: 'advReport',
 
     state: {
-        dataList:[]
+        dataList:[],
+        employeeList:[],
+        advAccountList:[]
     },
 
     effects: {
-        *fetch(_, { call, put }) {
-            const response = yield call(queryadvReport);
+        *fetch({payload}, { call, put }) {
+            const response = yield call(queryadvReport,payload);
             const finallResult = callbackDeal(response);
             if (finallResult == 'successCallBack') {
                 const dataList = response.data;
@@ -22,7 +25,44 @@ export default {
                     payload: dataList,
                 });
             }
-            
+        },
+        *fetchEmployee({ payload }, { call, put }) {
+            const response = yield call(queryEmployee,payload);
+            const finallResult = callbackDeal(response);
+            if (finallResult == 'successCallBack') {
+                const employeeTempList = response.data;
+                let employeeList = [];
+                employeeList = employeeTempList.map((item,index) => {
+                    let listItem = {};
+                    listItem.text = `${item.name} <${item.email}>`;
+                    listItem.value = item.id; 
+                    listItem.key = index+1;
+                    return listItem;
+                });
+                yield put({
+                    type: 'asyncEmployeeList',
+                    payload: employeeList,
+                });
+            }
+        },
+        *fetchAdvAccount({ payload }, { call, put }) {
+            const response = yield call(queryAdvAccount,payload);
+            const finallResult = callbackDeal(response);
+            if (finallResult == 'successCallBack') {
+                const advAccountTempList = response.data;
+                let advAccountList = [];
+                advAccountList = advAccountTempList.map((item,index) => {
+                    let listItem = {};
+                    listItem.text = `${item.name} <${item.email}>`;
+                    listItem.value = item.id; 
+                    listItem.key = index+1;
+                    return listItem;
+                });
+                yield put({
+                    type: 'asyncAdvAccountList',
+                    payload: advAccountList,
+                });
+            }
         },
     },
 
@@ -31,6 +71,18 @@ export default {
             return {
                 ...state,
                 dataList:payload,
+            };
+        },
+        asyncEmployeeList(state, { payload }) {
+            return {
+                ...state,
+                employeeList:payload,
+            };
+        },
+        asyncAdvAccountList(state, { payload }) {
+            return {
+                ...state,
+                advAccountList:payload,
             };
         },
         clear() {

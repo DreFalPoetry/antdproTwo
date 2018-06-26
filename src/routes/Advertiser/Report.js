@@ -71,18 +71,34 @@ export default class AdvReoprt extends Component {
         });
     }
 
-    handleSearch = (value) => {
-        this.setState({
-          dataSource: !value ? [] : [
-            value,
-            value + value,
-            value + value + value,
-          ],
-        });
+    searchEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.props.dispatch({
+                type:'advReport/fetchAdvAccount',
+                payload: {
+                    keyWord: value,
+                },
+            });
+        }else{
+            this.props.dispatch({
+                type:'advReport/fetchEmployee',
+                payload: {
+                    keyWord: value,
+                },
+            });
+        }
     }
 
-    onSelect = (value) => {
-        console.log('onSelect', value);
+    selectEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.setState({
+                advAccountId:value
+            });
+        }else{
+            this.setState({
+                employeeId:value
+            });
+        }
     }
 
     dateRangeChange = (date, dateString) => {
@@ -99,7 +115,7 @@ export default class AdvReoprt extends Component {
     render() {
         const { dataSource } = this.state;
         const { getFieldDecorator } = this.props.form;
-        const {dataList} = this.props.advReport;
+        const {dataList,employeeList,advAccountList} = this.props.advReport;
         return (
             <div>
                 <PageHeaderLayout>
@@ -117,10 +133,10 @@ export default class AdvReoprt extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Advertiser Account">
                                     <AutoComplete
-                                        dataSource={dataSource}
+                                        dataSource={advAccountList}
                                         style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'advAccount')}
                                         placeholder="search advertiser account"
                                     />
                                 </FormItem>
@@ -146,10 +162,10 @@ export default class AdvReoprt extends Component {
                                     </Select>
                                     <AutoComplete
                                         className={styles.linkTypeAutoSelect}
-                                        dataSource={dataSource}
+                                        dataSource={employeeList}
                                         style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'employee')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'employee')}
                                         placeholder="search employee"
                                     />
                                 </FormItem>
