@@ -25,7 +25,8 @@ export default class AdvReoprt extends Component {
             endDate:'',
             keyWords:'',
             advAccountValue:'',
-            employeeValue:''
+            employeeValue:'',
+            employeeRole:"1"
         };
         this.columns = [{
                 title: 'Date',
@@ -113,6 +114,7 @@ export default class AdvReoprt extends Component {
             this.props.dispatch({
                 type:'advReport/fetchEmployee',
                 payload: {
+                    role:this.state.employeeRole,
                     keyWord: value,
                 },
             });
@@ -141,7 +143,6 @@ export default class AdvReoprt extends Component {
     }
 
     radioChange = (e) => {
-        console.log('radio checked', e.target.value);
         this.setState({
             dateType: e.target.value,
         });
@@ -160,7 +161,14 @@ export default class AdvReoprt extends Component {
             advAccountId:null,
             employeeId:null,
             advAccountValue:'',
-            employeeValue:''
+            employeeValue:'',
+            employeeRole:'1'
+        })
+    }
+
+    changeEmployeeRole = (value) => {
+        this.setState({
+            employeeRole:value
         })
     }
 
@@ -184,9 +192,10 @@ export default class AdvReoprt extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Advertiser Account">
                                     <AutoComplete
+                                        allowClear
                                         value={this.state.advAccountValue}
                                         dataSource={advAccountList}
-                                        style={{ width: 200 }}
+                                        style={{ width: 230 }}
                                         onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
                                         onSearch={this.searchEmployeeOrAdvAccount.bind(this,'advAccount')}
                                         placeholder="search advertiser account"
@@ -211,15 +220,21 @@ export default class AdvReoprt extends Component {
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Employee">
-                                    <Select defaultValue="alipay" style={{ width: 100 }} className={styles.linkTypeSelect}>
-                                        <Option value="alipay">Sales</Option>
-                                        <Option value="bank">PM</Option>
+                                    <Select 
+                                        value={this.state.employeeRole} 
+                                        style={{ width: 100 }} 
+                                        className={styles.linkTypeSelect}
+                                        onChange={this.changeEmployeeRole}
+                                        >
+                                        <Option value="1">Sales</Option>
+                                        <Option value="0">PM</Option>
                                     </Select>
                                     <AutoComplete
+                                        allowClear
                                         value={this.state.employeeValue}
                                         className={styles.linkTypeAutoSelect}
                                         dataSource={employeeList}
-                                        style={{ width: 200 }}
+                                        style={{ width: 230 }}
                                         onSelect={this.selectEmployeeOrAdvAccount.bind(this,'employee')}
                                         onSearch={this.searchEmployeeOrAdvAccount.bind(this,'employee')}
                                         placeholder="search employee"

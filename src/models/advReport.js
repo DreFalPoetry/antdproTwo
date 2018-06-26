@@ -103,7 +103,6 @@ export default {
             };
         },
         clearEmployeeAndAdvAccount() {
-            console.log('sdsd');
             return {
                 employeeList:[],
                 advAccountList:[],
