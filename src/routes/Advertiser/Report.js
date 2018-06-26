@@ -18,15 +18,19 @@ export default class AdvReoprt extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            dateType:1,
-            advAccountId:null,
-            employeeId:null,
-            startDate:'',
-            endDate:'',
-            keyWords:'',
             advAccountValue:'',
             employeeValue:'',
-            employeeRole:"1"
+            employeeRole:"1",
+            tableQuery:{
+                dateType:1,
+                advAccountId:null,
+                employeeId:null,
+                startDate:'',
+                endDate:'',
+                keyWords:'',
+            },
+            pageCurrent:1,
+            pageSize:20,
         };
         this.columns = [{
                 title: 'Date',
@@ -65,7 +69,9 @@ export default class AdvReoprt extends Component {
         this.props.dispatch({
             type: 'advReport/fetch',
             payload:{
-                dateType:0
+                ...this.state.tableQuery,
+                pageCurrent:this.state.pageCurrent,
+                pageSize:this.state.pageSize
             }
         })
     }
@@ -80,17 +86,19 @@ export default class AdvReoprt extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
+                let data = Object.assign({}, this.state.tableQuery, { keyWords:values.keyWords});
                 this.setState({
-                    keyWords:values.keyWords
+                    tableQuery: data,
+                    pageCurrent:1
                 },function(){
                     this.props.dispatch({
                         type:'advReport/fetch',
-                        payload:{...this.state}
-                    })
-                    this.props.dispatch({
-                        type:'advReport/asyncListQuery',
-                        payload:{...this.state}
-                    })
+                        payload:{
+                            ...this.state.tableQuery,
+                            pageCurrent:this.state.pageCurrent,
+                            pageSize:this.state.pageSize
+                        }
+                    });
                 });
             }
         });
@@ -98,6 +106,7 @@ export default class AdvReoprt extends Component {
 
     searchEmployeeOrAdvAccount = (type,value) => {
         if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:null});
             this.setState({
                 advAccountValue:value,
             })
@@ -108,6 +117,7 @@ export default class AdvReoprt extends Component {
                 },
             });
         }else{
+            this.tableQueryReplace({employeeId:null});
             this.setState({
                 employeeValue:value,
             })
@@ -123,28 +133,30 @@ export default class AdvReoprt extends Component {
 
     selectEmployeeOrAdvAccount = (type,value) => {
         if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:value});
             this.setState({
-                advAccountValue:value,
-                advAccountId:value,
+                advAccountValue:value
             });
         }else{
+            this.tableQueryReplace({employeeId:value});
             this.setState({
                 employeeValue:value,
-                employeeId:value
             });
         }
     }
 
     dateRangeChange = (date, dateString) => {
-        this.setState({
-            startDate:dateString[0],
-            endDate:dateString[1]
-        })
+        this.tableQueryReplace({ startDate:dateString[0],endDate:dateString[1]});
     }
 
     radioChange = (e) => {
+        this.tableQueryReplace({ dateType: e.target.value});
+    }
+
+    tableQueryReplace = (childObj) =>{
+        let data = Object.assign({}, this.state.tableQuery, childObj);
         this.setState({
-            dateType: e.target.value,
+            tableQuery: data
         });
     }
 
@@ -152,17 +164,29 @@ export default class AdvReoprt extends Component {
         this.props.form.resetFields();
         this.props.dispatch({
             type:'advReport/clearEmployeeAndAdvAccount'
-        })
+        });
         this.setState({
-            startDate:'',
-            endDate:'',
-            keyWords:'',
-            dateType:1,
-            advAccountId:null,
-            employeeId:null,
             advAccountValue:'',
             employeeValue:'',
-            employeeRole:'1'
+            employeeRole:'1',
+            tableQuery:{
+                dateType:1,
+                advAccountId:null,
+                employeeId:null,
+                startDate:'',
+                endDate:'',
+                keyWords:'',
+            },
+            pageCurrent:1
+        },function(){
+            this.props.dispatch({
+                type: 'advReport/fetch',
+                payload:{
+                    ...tableQuery,
+                    pageCurrent:this.state.pageCurrent,
+                    pageSize:this.state.pageSize
+                }
+            });
         })
     }
 
@@ -172,9 +196,41 @@ export default class AdvReoprt extends Component {
         })
     }
 
+    pageSizeChange = (current, pageSize) => {
+        let data = Object.assign({}, this.state.tableQuery, {});
+        this.setState({
+            pageSize:pageSize,
+            pageCurrent:1
+        },function(){
+            this.props.dispatch({
+                type: 'advReport/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        });
+    }
+
+    pageChange = (page, pageSize) => {
+        this.setState({
+            pageCurrent:page
+        },function(){
+            this.props.dispatch({
+                type: 'advReport/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        })
+    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
-        const {dataList,employeeList,advAccountList} = this.props.advReport;
+        const {dataList,employeeList,advAccountList,total,pageSize,pageCurrent} = this.props.advReport;
         return (
             <div>
                 <PageHeaderLayout>
@@ -206,13 +262,13 @@ export default class AdvReoprt extends Component {
                                 <FormItem label="Date Range">
                                     <RangePicker 
                                         onChange={this.dateRangeChange} 
-                                        value={this.state.startDate?[moment(this.state.startDate), moment(this.state.endDate)]:null}
+                                        value={this.state.tableQuery.startDate?[moment(this.state.tableQuery.startDate), moment(this.state.tableQuery.endDate)]:null}
                                         />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Display By Date">
-                                    <RadioGroup onChange={this.radioChange} value={this.state.dateType}>
+                                    <RadioGroup onChange={this.radioChange} value={this.state.tableQuery.dateType}>
                                         <Radio value={1}>Monthly</Radio>
                                         <Radio value={2}>Daily</Radio>
                                     </RadioGroup>
@@ -254,6 +310,16 @@ export default class AdvReoprt extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        pagination={{
+                            defaultCurrent:1,
+                            total:Number(total),
+                            showSizeChanger:true,
+                            pageSize:Number(pageSize),
+                            pageSizeOptions:['10','20','30','50','100'],
+                            onShowSizeChange:this.pageSizeChange,
+                            current:Number(pageCurrent), 
+                            onChange:this.pageChange
+                        }}
                         bordered
                     />
                     </Card>

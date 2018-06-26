@@ -15,8 +15,8 @@ export default {
             dateType:0,
             employeeId:null
         },
-        total:null,
-        pageSize:null,
+        total:0,
+        pageSize:20,
         pageCurrent:1,
         employeeList:[],
         advAccountList:[],
