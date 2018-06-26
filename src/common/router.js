@@ -172,7 +172,7 @@ export const getRouterData = app => {
         component: dynamicWrapper(app, ['advReport'], () => import('../routes/Advertiser/Report')),
     },
     '/advertiser/advStatement': {
-        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/Statement')),
+        component: dynamicWrapper(app, ['advReport','advStatement'], () => import('../routes/Advertiser/Statement')),
     },
     '/advertiser/advInvRec': {
         component: dynamicWrapper(app, [], () => import('../routes/Advertiser/InvoiceRecord')),

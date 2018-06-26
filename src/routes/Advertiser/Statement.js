@@ -3,22 +3,38 @@ import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert} from 'antd';
 import commonStyle from './Report.less';
 import InvoiceModal from './GenerateInvoiceModal';
+import { connect } from 'dva';
+import moment from 'moment';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
 
 @Form.create()
+@connect(({ advReport,advStatement,loading }) => ({
+    advReport,
+    advStatement,
+    loading: loading.effects['advReport/fetch'],  
+}))
 export default class AdvStatement extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            dataSource: [],
-            radioValue:1,
             selectedRowKeys: [],
             selectedRows:[],
             totalInvoiceAmount:[],
-            invoiceModalvisible:false
+            invoiceModalvisible:false,
+            tableQuery:{
+                advAccountId:null,
+                employeeId:null,
+                month:'',
+                keyWords:''
+            },
+            advAccountValue:'',
+            employeeValue:'',
+            employeeRole:"1",
+            pageCurrent:1,
+            pageSize:20,
         };
         this.columns = [{
                 title: 'Campaign',
@@ -45,40 +61,18 @@ export default class AdvStatement extends Component {
                 title: 'Move to',
                 dataIndex: 'month',
             }];
-        this.data = [{
-            "uniqueKey": '1',
-            "id":23232,
-            "name":"亚马逊",
-            "invoiceAmount":"132",//（默认为空）
-            "currency":"USD", //（默认为空）
-            "deductedConv":"0.23",
-            "deductedAmt":"USD",
-            "finApproStatus":0, //(0--Pending-Audit，1--Approved 2--Rejected 3--Invoiced)
-            "month":"2018-06"
-        },{
-            "uniqueKey": '2',
-            "id":23232,
-            "name":"亚马逊",
-            "invoiceAmount":"132",//（默认为空）
-            "currency":"USD", //（默认为空）
-            "deductedConv":"0.23",
-            "deductedAmt":"USD",
-            "finApproStatus":0, //(0--Pending-Audit，1--Approved 2--Rejected 3--Invoiced)
-            "month":"2018-06"
-        },{
-            "uniqueKey": '3',
-            "id":23232,
-            "name":"亚马逊",
-            "invoiceAmount":"132",//（默认为空）
-            "currency":"USD", //（默认为空）
-            "deductedConv":"0.23",
-            "deductedAmt":"USD",
-            "finApproStatus":0, //(0--Pending-Audit，1--Approved 2--Rejected 3--Invoiced)
-            "month":"2018-06"
-        }];
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+        this.props.dispatch({
+            type: 'advStatement/fetch',
+            payload:{
+                ...this.state.tableQuery,
+                pageCurrent:this.state.pageCurrent,
+                pageSize:this.state.pageSize
+            }
+        })
+    }
 
     componentWillUnmount() {}
 
@@ -86,34 +80,26 @@ export default class AdvStatement extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-              console.log('Received values of form: ', values);
+                console.log('Received values of form: ', values);
+                let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords});
+                this.setState({
+                    tableQuery: data
+                },function(){
+                    this.props.dispatch({
+                        type:'advStatement/fetch',
+                        payload:{
+                            ...this.state.tableQuery,
+                            pageCurrent:this.state.pageCurrent,
+                            pageSize:this.state.pageSize
+                        }
+                    });
+                });
             }
         });
     }
 
-    handleSearch = (value) => {
-        this.setState({
-          dataSource: !value ? [] : [
-            value,
-            value + value,
-            value + value + value,
-          ],
-        });
-    }
-
-    onSelect = (value) => {
-        console.log('onSelect', value);
-    }
-
     dateRangeChange = (date, dateString) => {
-        console.log(date, dateString);
-    }
-
-    radioChange = (e) => {
-        console.log('radio checked', e.target.value);
-        this.setState({
-          radioValue: e.target.value,
-        });
+        this.tableQueryReplace({month:dateString});
     }
 
     //批量选择操作 1--Approved 2--Rejected 3--Invoiced
@@ -184,8 +170,123 @@ export default class AdvStatement extends Component {
         this.formRef = formRef;
     }
 
+    searchEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:null});
+            this.setState({
+                advAccountValue:value,
+            })
+            this.props.dispatch({
+                type:'advReport/fetchAdvAccount',
+                payload: {
+                    keyWord: value,
+                },
+            });
+        }else{
+            this.tableQueryReplace({employeeId:null});
+            this.setState({
+                employeeValue:value,
+            })
+            this.props.dispatch({
+                type:'advReport/fetchEmployee',
+                payload: {
+                    role:this.state.employeeRole,
+                    keyWord: value,
+                },
+            });
+        }
+    }
+
+    selectEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:value});
+            this.setState({
+                advAccountValue:value
+            });
+        }else{
+            this.tableQueryReplace({employeeId:value});
+            this.setState({
+                employeeValue:value,
+            });
+        }
+    }
+
+    tableQueryReplace = (childObj) =>{
+        let data = Object.assign({}, this.state.tableQuery, childObj);
+        this.setState({
+            tableQuery: data
+        });
+    }
+
+    changeEmployeeRole = (value) => {
+        this.setState({
+            employeeRole:value
+        })
+    }
+
+    pageSizeChange = (current, pageSize) => {
+        this.setState({
+            pageSize:pageSize,
+            pageCurrent:1
+        },function(){
+            this.props.dispatch({
+                type: 'advReport/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:this.state.pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        });
+    }
+
+    pageChange = (page, pageSize) => {
+        this.setState({
+            pageCurrent:page
+        },function(){
+            this.props.dispatch({
+                type: 'advReport/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:this.state.pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        })
+    }
+
+    clearQuery = () => {
+        this.props.form.resetFields();
+        this.props.dispatch({
+            type:'advReport/clearEmployeeAndAdvAccount'
+        });
+        this.setState({
+            tableQuery:{
+                advAccountId:null,
+                employeeId:null,
+                month:'',
+                keyWords:''
+            },
+            advAccountValue:'',
+            employeeValue:'',
+            employeeRole:"1",
+            pageCurrent:1,
+        },function(){
+            this.props.dispatch({
+                type: 'advStatement/fetch',
+                payload:{
+                    ...this.state.tableQuery,
+                    pageCurrent:this.state.pageCurrent,
+                    pageSize:this.state.pageSize
+                }
+            });
+        })
+    }
+
     render() {
-        const { dataSource,selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
+        const {selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
+        const {employeeList,advAccountList} = this.props.advReport;
+        const {dataList,total,pageSize,pageCurrent} = this.props.advStatement;
         const { getFieldDecorator } = this.props.form;
         const rowSelection = {
             selectedRowKeys:selectedRowKeys,
@@ -208,40 +309,52 @@ export default class AdvStatement extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Advertiser Account">
                                     <AutoComplete
-                                        dataSource={dataSource}
-                                        style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        allowClear
+                                        value={this.state.advAccountValue}
+                                        dataSource={advAccountList}
+                                        style={{ width: 230 }}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'advAccount')}
                                         placeholder="search advertiser account"
                                     />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Employee">
-                                    <Select defaultValue="alipay" style={{ width: 100 }} className={commonStyle.linkTypeSelect}>
-                                        <Option value="alipay">Sales</Option>
-                                        <Option value="bank">PM</Option>
+                                    <Select 
+                                        value={this.state.employeeRole} 
+                                        style={{ width: 100 }} 
+                                        className={commonStyle.linkTypeSelect}
+                                        onChange={this.changeEmployeeRole}
+                                        >
+                                        <Option value="1">Sales</Option>
+                                        <Option value="0">PM</Option>
                                     </Select>
                                     <AutoComplete
+                                        allowClear
+                                        value={this.state.employeeValue}
                                         className={commonStyle.linkTypeAutoSelect}
-                                        dataSource={dataSource}
-                                        style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        dataSource={employeeList}
+                                        style={{ width: 230 }}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'employee')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'employee')}
                                         placeholder="search employee"
                                     />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Date Range">
-                                    <MonthPicker onChange={this.dateRangeChange} />
+                                    <MonthPicker   
+                                        value={this.state.tableQuery.month?moment(this.state.tableQuery.month):null} 
+                                        onChange={this.dateRangeChange} 
+                                    />
                                 </FormItem>
                             </Col>
                         </Row>
                         <Row>
                             <div className={commonStyle.searchBtnWrapper}>
-                                <Button type="primary">QUERY</Button>
-                                <Button style={{marginLeft:'10px'}}>RESET</Button>
+                                <Button type="primary" htmlType="submit">QUERY</Button>
+                                <Button style={{marginLeft:'10px'}}  onClick={this.clearQuery}>RESET</Button>
                             </div>
                         </Row>
                         <Row>
@@ -284,7 +397,17 @@ export default class AdvStatement extends Component {
                     <Table 
                         rowSelection={rowSelection}
                         columns={this.columns} 
-                        dataSource={this.data} 
+                        dataSource={dataList} 
+                        pagination={{
+                            defaultCurrent:1,
+                            total:Number(total),
+                            showSizeChanger:true,
+                            pageSize:Number(pageSize),
+                            pageSizeOptions:['10','20','30','50','100'],
+                            onShowSizeChange:this.pageSizeChange,
+                            current:Number(pageCurrent), 
+                            onChange:this.pageChange
+                        }}
                         rowKey="uniqueKey"
                         bordered
                     />

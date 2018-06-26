@@ -89,3 +89,7 @@ export async function queryEmployee(params) {
 export async function queryAdvAccount(params) {
     return request(`/api/advAccount?${stringify(params)}`);
 }
+
+export async function queryAdvStatement(params) {
+    return request(`/api/advStatement?${stringify(params)}`);
+}

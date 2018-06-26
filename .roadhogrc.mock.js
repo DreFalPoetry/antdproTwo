@@ -169,6 +169,22 @@ const proxy = {
             email:'@email'
         }]
     }),
+    'GET /api/advStatement': mockjs.mock({
+        'code':0,
+        'data|100': [{ 
+            'id|+1':1001, 
+            name: '@name',
+            'invoiceAmount|1-100.2':34.23,
+            currency:'USD',
+            'deductedConv|0.2':0.12,
+            'deductedAmt':'USD',
+            'finApproStatus|0-3': 0, 
+            month:'@date',
+        }],
+        'total':100,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));
