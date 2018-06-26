@@ -185,6 +185,29 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    'GET /api/advInvRecord': mockjs.mock({
+        'code':0,
+        'data|100': [{ 
+            'id|+1':1001, 
+            advName: '@name',
+            campMonth:'@date',
+            'amount|100-10000':1333,
+            currency:'USD',
+            'sysInvNo|+1':102323021,
+            'actInvNo|+1':242334340,
+            invDate:'@date',
+            'billTerm|10-1000':90,
+            'dueOn':'@date',
+            'payTo':"MocaTechno",
+            'collecAmount|100-10000':2344,
+            dataOnColl:'@date',
+            'badDebt|10-100':50,
+            'remark':'我是备注信息',
+        }],
+        'total':100,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));

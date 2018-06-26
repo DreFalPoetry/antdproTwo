@@ -3,19 +3,36 @@ import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
 import styles from './Report.less';
 import CollectModal from './CollectModal';
+import { connect } from 'dva';
+import moment from 'moment';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
 
 @Form.create()
+@connect(({ advReport,advInvRecord,loading }) => ({
+    advReport,
+    advInvRecord,
+    loading: loading.effects['advInvRecord/fetch'],  
+}))
 export default class AdvInvRecord extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            dataSource: [],
-            radioValue:1,
-            collectModalvisible:false
+            collectModalvisible:false,
+            pageCurrent:1,
+            pageSize:20,
+            advAccountValue:'',
+            employeeValue:'',
+            employeeRole:"1",
+            tableQuery:{
+                invoiceNo:'',
+                keyWords:'',
+                employeeId:null,
+                advAccountId:null,
+                month:''
+            }
         };
         this.columns = [{
                 title: 'Advertiser Name',
@@ -59,68 +76,24 @@ export default class AdvInvRecord extends Component {
             },{
                 title: 'Remark',
                 dataIndex: 'remark',
-            },,{
+            },{
                 title: '',
                 dataIndex: '',
                 render:() =>{
                     return <div><Button>Destroy</Button><Button onClick={this.openCollectModal}>Collect</Button></div> 
                 }
             }];
-        this.data = [{
-            "uniqueKey": '1',
-            "id":23233,
-            "advName":"亚马逊",
-            "campMonth":"2018-06",
-            "amount":"2323",
-            "currency":"USD", 
-            "sysInvNo":"0.23",
-            "actInvNo":"USD",
-            "invDate":"2018-06-10",
-            "billTerm":"90",
-            "dueOn":"2018-07-10",
-            "payTo":"MocaTechno",
-            "collecAmount":"2323",
-            "dataOnColl":"2018-09-10",
-            "badDebt":"50",
-            "remark":"备注信息。。。"
-        },{
-            "uniqueKey": '2',
-            "id":23233,
-            "advName":"亚马逊",
-            "campMonth":"2018-06",
-            "amount":"2323",
-            "currency":"USD", 
-            "sysInvNo":"0.23",
-            "actInvNo":"USD",
-            "invDate":"2018-06-10",
-            "billTerm":"90",
-            "dueOn":"2018-07-10",
-            "payTo":"MocaTechno",
-            "collecAmount":"2323",
-            "dataOnColl":"2018-09-10",
-            "badDebt":"50",
-            "remark":"备注信息。。。"
-        },{
-            "uniqueKey": '3',
-            "id":23233,
-            "advName":"亚马逊",
-            "campMonth":"2018-06",
-            "amount":"2323",
-            "currency":"USD", 
-            "sysInvNo":"0.23",
-            "actInvNo":"USD",
-            "invDate":"2018-06-10",
-            "billTerm":"90",
-            "dueOn":"2018-07-10",
-            "payTo":"MocaTechno",
-            "collecAmount":"2323",
-            "dataOnColl":"2018-09-10",
-            "badDebt":"50",
-            "remark":"备注信息。。。"
-        }];
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+        this.props.dispatch({
+            type: 'advInvRecord/fetch',
+            payload:{
+                pageCurrent:this.state.pageCurrent,
+                pageSize:this.state.pageSize
+            }
+        })
+    }
 
     componentWillUnmount() {}
 
@@ -128,34 +101,26 @@ export default class AdvInvRecord extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-              console.log('Received values of form: ', values);
+                console.log('Received values of form: ', values);
+                let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords,invoiceNo:values.invoiceNo});
+                this.setState({
+                    tableQuery: data
+                },function(){
+                    this.props.dispatch({
+                        type:'advStatement/fetch',
+                        payload:{
+                            ...this.state.tableQuery,
+                            pageCurrent:this.state.pageCurrent,
+                            pageSize:this.state.pageSize
+                        }
+                    });
+                });
             }
         });
     }
 
-    handleSearch = (value) => {
-        this.setState({
-          dataSource: !value ? [] : [
-            value,
-            value + value,
-            value + value + value,
-          ],
-        });
-    }
-
-    onSelect = (value) => {
-        console.log('onSelect', value);
-    }
-
     dateRangeChange = (date, dateString) => {
-        console.log(date, dateString);
-    }
-
-    radioChange = (e) => {
-        console.log('radio checked', e.target.value);
-        this.setState({
-          radioValue: e.target.value,
-        });
+        this.tableQueryReplace({month:dateString});
     }
 
     cancelCreat = () => {
@@ -182,8 +147,92 @@ export default class AdvInvRecord extends Component {
         this.setState({ collectModalvisible: true });
     }
 
+    searchEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:null});
+            this.setState({
+                advAccountValue:value,
+            })
+            this.props.dispatch({
+                type:'advReport/fetchAdvAccount',
+                payload: {
+                    keyWord: value,
+                },
+            });
+        }else{
+            this.tableQueryReplace({employeeId:null});
+            this.setState({
+                employeeValue:value,
+            })
+            this.props.dispatch({
+                type:'advReport/fetchEmployee',
+                payload: {
+                    role:this.state.employeeRole,
+                    keyWord: value,
+                },
+            });
+        }
+    }
+
+    selectEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:value});
+            this.setState({
+                advAccountValue:value
+            });
+        }else{
+            this.tableQueryReplace({employeeId:value});
+            this.setState({
+                employeeValue:value,
+            });
+        }
+    }
+
+    tableQueryReplace = (childObj) =>{
+        let data = Object.assign({}, this.state.tableQuery, childObj);
+        this.setState({
+            tableQuery: data
+        });
+    }
+
+    changeEmployeeRole = (value) => {
+        this.setState({
+            employeeRole:value
+        })
+    }
+
+    clearQuery = () => {
+        this.props.form.resetFields();
+        this.props.dispatch({
+            type:'advReport/clearEmployeeAndAdvAccount'
+        });
+        this.setState({
+            advAccountValue:'',
+            employeeValue:'',
+            employeeRole:"1",
+            pageCurrent:1,
+            tableQuery:{
+                invoiceNo:'',
+                keyWords:'',
+                employeeId:null,
+                advAccountId:null,
+                month:''
+            }
+        },function(){
+            this.props.dispatch({
+                type: 'advStatement/fetch',
+                payload:{
+                    ...this.state.tableQuery,
+                    pageCurrent:this.state.pageCurrent,
+                    pageSize:this.state.pageSize
+                }
+            });
+        })
+    }
+
     render() {
-        const { dataSource } = this.state;
+        const {dataList,total,pageSize,pageCurrent} = this.props.advInvRecord;
+        const {employeeList,advAccountList} = this.props.advReport;
         const { getFieldDecorator } = this.props.form;
         return (
             <div>
@@ -202,33 +251,45 @@ export default class AdvInvRecord extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Advertiser Account">
                                     <AutoComplete
-                                        dataSource={dataSource}
-                                        style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        allowClear
+                                        value={this.state.advAccountValue}
+                                        dataSource={advAccountList}
+                                        style={{ width: 230 }}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'advAccount')}
                                         placeholder="search advertiser account"
                                     />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Employee">
-                                    <Select defaultValue="alipay" style={{ width: 100 }} className={styles.linkTypeSelect}>
-                                        <Option value="alipay">Sales</Option>
-                                        <Option value="bank">PM</Option>
+                                    <Select 
+                                         value={this.state.employeeRole}  
+                                         style={{ width: 100 }} 
+                                         className={styles.linkTypeSelect}
+                                         onChange={this.changeEmployeeRole}
+                                        >
+                                        <Option value="1">Sales</Option>
+                                        <Option value="0">PM</Option>
                                     </Select>
                                     <AutoComplete
+                                        allowClear
+                                        value={this.state.employeeValue}
                                         className={styles.linkTypeAutoSelect}
-                                        dataSource={dataSource}
-                                        style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        dataSource={employeeList}
+                                        style={{ width: 230 }}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'employee')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'employee')}
                                         placeholder="search employee"
                                     />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Campaign  Month:">
-                                    <MonthPicker onChange={this.dateRangeChange} />
+                                    <MonthPicker 
+                                        onChange={this.dateRangeChange} 
+                                        value={this.state.tableQuery.month?moment(this.state.tableQuery.month):null}
+                                    />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}> 
@@ -241,17 +302,18 @@ export default class AdvInvRecord extends Component {
                         </Row>
                         <Row>
                             <div className={styles.searchBtnWrapper}>
-                                <Button type="primary">QUERY</Button>
-                                <Button style={{marginLeft:'10px'}}>RESET</Button>
+                                <Button type="primary" htmlType="submit">QUERY</Button>
+                                <Button style={{marginLeft:'10px'}}  onClick={this.clearQuery}>RESET</Button>
                             </div>
                         </Row>
                     </Form>
                     </div>
                     <Table 
                         columns={this.columns} 
-                        dataSource={this.data} 
+                        dataSource={dataList} 
                         rowKey="uniqueKey"
                         bordered
+                        scroll={{ x: 1500 }}
                     />
                     </Card>
                 </PageHeaderLayout>
