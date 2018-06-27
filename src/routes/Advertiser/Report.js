@@ -32,37 +32,6 @@ export default class AdvReoprt extends Component {
             pageCurrent:1,
             pageSize:20,
         };
-        this.columns = [{
-                title: 'Date',
-                dataIndex: 'date',
-            },{
-                title: 'Campaign',
-                dataIndex: 'id',
-                render: (text,record) => {
-                    return <span>{text+"-"+record.name}</span>
-                }
-            },{
-                title: 'Payout',
-                dataIndex: 'payout'
-            },{
-                title: 'Currency',
-                dataIndex: 'currency',
-            },{
-                title: 'Totoal Conv',
-                dataIndex: 'totalConv',
-            },{
-                title: 'Fraud%',
-                dataIndex: 'frand',
-            },{
-                title: 'Revenue$',
-                dataIndex: 'revenue',
-            },{
-                title: 'Cost$',
-                dataIndex: 'cost',
-            },{
-                title: 'Margin',
-                dataIndex: 'margin',
-            }];
     }
 
     componentDidMount() {
@@ -230,8 +199,67 @@ export default class AdvReoprt extends Component {
 
     render() {
         const { getFieldDecorator } = this.props.form;
-        const {dataList,employeeList,advAccountList,total,pageSize,pageCurrent} = this.props.advReport;
+        const {dataList,employeeList,advAccountList,total,pageSize,pageCurrent,listHeaderInfo} = this.props.advReport;
         const {loading} = this.props;
+        console.log(listHeaderInfo);
+        const columns = [{
+            title: 'Date',
+            children: [{
+                title: 'Total',
+                dataIndex: 'date',
+            }]
+        },{
+            title: 'Campaign',
+            children: [{
+                title:listHeaderInfo.total?listHeaderInfo.total+' campaigns':'0 campaigns',
+                dataIndex: 'id',
+                render: (text,record) => {
+                    return <span>{text+"-"+record.name}</span>
+                }
+            }]
+        },{
+            title: 'Payout',
+            children: [{
+                title: '',
+                dataIndex: 'payout',
+            }]
+        },{
+            title: 'Currency',
+            children: [{
+                title: '',
+                dataIndex: 'currency',
+            }]
+        },{
+            title: 'Totoal Conv',
+            children: [{
+                title: listHeaderInfo.totalConv,
+                dataIndex: 'totalConv',
+            }]
+        },{
+            title: 'Fraud%',
+            children: [{
+                title: listHeaderInfo.fraud,
+                dataIndex: 'frand',
+            }]
+        },{
+            title: 'Revenue$',
+            children: [{
+                title: listHeaderInfo.revenue,
+                dataIndex: 'revenue',
+            }]
+        },{
+            title: 'Cost$',
+            children: [{
+                title: listHeaderInfo.cost,
+                dataIndex: 'cost',
+            }]
+        },{
+            title: 'Margin',
+            children: [{
+                title: listHeaderInfo.margin,
+                dataIndex: 'margin',
+            }]
+        }];
         return (
             <div>
                 <PageHeaderLayout>
@@ -308,7 +336,7 @@ export default class AdvReoprt extends Component {
                     </Form>
                     </div>
                     <Table 
-                        columns={this.columns} 
+                        columns={columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
                         loading={loading}

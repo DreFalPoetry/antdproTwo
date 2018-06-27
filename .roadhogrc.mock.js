@@ -149,6 +149,14 @@ const proxy = {
             'cost|1-100.2':34.23,
             'margin|1-100.2':2.23
         }],
+        'headerInfo':{
+            'total':32,
+            "totalConv":2332312,
+            "fraud":"2%",
+            "revenue":"23321",
+            "cost":"23211",
+            "margin":"23.23%"
+        },
         'total':100,
         'pageSize':20,
         'pageCurrent':1

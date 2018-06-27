@@ -7,6 +7,14 @@ export default {
 
     state: {
         dataList:[],
+        listHeaderInfo:{
+            total:0,
+            totalConv:0,
+            fraud:'0%',
+            revenue:0,
+            cost:0,
+            margin:'0%'
+        },
         listQuery:{
             keyWords:'',
             advAccountId:null,
@@ -28,12 +36,17 @@ export default {
             const finallResult = callbackDeal(response);
             if (finallResult == 'successCallBack') {
                 const dataList = response.data;
+                const listHeaderInfo = response.headerInfo;
                 dataList.filter((item,index) => {
                     item.uniqueKey = index+1;
                 });
                 yield put({
                     type: 'asyncDataList',
                     payload: dataList,
+                });
+                yield put({
+                    type: 'asyncListHeaderInfo',
+                    payload: listHeaderInfo,
                 });
             }
         },
@@ -84,6 +97,12 @@ export default {
                 dataList:payload,
             };
         },
+        asyncListHeaderInfo(state, { payload }) {
+            return {
+                ...state,
+                listHeaderInfo:payload,
+            };
+        },
         asyncListQuery(state, { payload }) {
             return {
                 ...state,
@@ -111,6 +130,14 @@ export default {
         clear() {
             return {
                 dataList:[],
+                listHeaderInfo:{
+                    total:0,
+                    totalConv:0,
+                    fraud:'0%',
+                    revenue:0,
+                    cost:0,
+                    margin:'0%'
+                },
                 listQuery:{
                     keyWords:'',
                     advAccountId:null,
