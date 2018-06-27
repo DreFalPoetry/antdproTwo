@@ -1,10 +1,11 @@
 import React, { Component ,Fragment} from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert} from 'antd';
+import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge } from 'antd';
 import commonStyle from './Report.less';
 import InvoiceModal from './GenerateInvoiceModal';
 import { connect } from 'dva';
 import moment from 'moment';
+import {deepCloneObj} from '../../utils/commonFunc';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -35,32 +36,10 @@ export default class AdvStatement extends Component {
             employeeRole:"1",
             pageCurrent:1,
             pageSize:20,
+            invoiceAmount:[],
+            cellCurrency:[],
+            cellApprove:[]
         };
-        this.columns = [{
-                title: 'Campaign',
-                dataIndex: 'id',
-                render: (text,record) => {
-                    return <span>{text+"-"+record.name}</span>
-                }
-            },{
-                title: 'Invoice Amount',
-                dataIndex: 'invoiceAmount'
-            },{
-                title: 'Currency',
-                dataIndex: 'currency',
-            },{
-                title: 'Deducted Conv.',
-                dataIndex: 'deductedConv',
-            },{
-                title: 'Deducted Amt.',
-                dataIndex: 'deductedAmt',
-            },{
-                title: 'Finance Approve',
-                dataIndex: 'finApproStatus',
-            },{
-                title: 'Move to',
-                dataIndex: 'month',
-            }];
     }
 
     componentDidMount() {
@@ -288,6 +267,55 @@ export default class AdvStatement extends Component {
         })
     }
 
+    //表格输入invoiceAmount
+    inputInvoiceAmount = (index,e) => {
+        let tempInvoiceAmount = this.state.invoiceAmount;
+        tempInvoiceAmount[index] = e.target.value;
+        this.setState({
+            invoiceAmount:tempInvoiceAmount
+        })
+    }
+
+    sureInvoiceAmount = (index,record) => {
+        console.log(this.state.invoiceAmount[index]);
+        record.invoiceAmount = this.state.invoiceAmount[index];
+        const {dataList} = this.props.advStatement;
+        let tempDataList = deepCloneObj(dataList);
+        tempDataList.forEach(function(item,ind){
+            if(item.uniqueKey==record.uniqueKey){
+                tempDataList.splice(ind,1,record);
+            }
+        });
+        this.props.dispatch({
+            type:'advStatement/asyncDataList',
+            payload: tempDataList,
+        })
+    }
+
+    selectCellCurrency = (index,value) => {
+        let tempCellCurrency = this.state.cellCurrency;
+        tempCellCurrency[index] = value;
+        this.setState({
+            cellCurrency:tempCellCurrency
+        })
+    }
+
+    sureCellCurrency = (index) => {
+        console.log(this.state.cellCurrency[index]);
+    }
+
+    selectCellApprove = (index,value) => {
+        let tempCellApprove = this.state.cellApprove;
+        tempCellApprove[index] = value;
+        this.setState({
+            cellApprove:tempCellApprove
+        });
+    }
+
+    sureCellApprove = (index) => {
+        console.log(this.state.cellApprove[index]);
+    }
+
     render() {
         const {selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
         const {employeeList,advAccountList} = this.props.advReport;
@@ -298,6 +326,92 @@ export default class AdvStatement extends Component {
             selectedRowKeys:selectedRowKeys,
             onChange:this.selectTableRow,
         };
+        const userRole = localStorage.getItem('antd-pro-authority');
+        const columns = [{
+            title: 'Campaign',
+            dataIndex: 'id',
+            render: (text,record) => {
+                return <span>{text+"-"+record.name}</span>
+            }
+        },{
+            title: 'Invoice Amount',
+            dataIndex: 'invoiceAmount',
+            render:(text,record,index) => {
+                if(!text){
+                    if(userRole == 'admin'){
+                        return  <div>
+                                    <Input value={this.state.invoiceAmount[index]} 
+                                        onChange={this.inputInvoiceAmount.bind(this,index)}
+                                        size="small"
+                                        style={{width:80,marginRight:5}}/>
+                                    <Button type='primary' size="small" onClick={this.sureInvoiceAmount.bind(this,index,record)}>Sure</Button>
+                                </div> 
+                    }else{
+                        return ''
+                    }
+                }else{
+                    return text;
+                }
+                
+            }
+        },{
+            title: 'Currency',
+            dataIndex: 'currency',
+            render:(text,record,index) => {
+                if(!text){
+                    if(userRole == 'admin'){
+                        return (
+                            <div>
+                                <Select size="small" defaultValue="USD" style={{ width: 80,marginRight:5 }} onChange={this.selectCellCurrency.bind(this,index)}>
+                                    <Option value="USD">USD</Option>
+                                    <Option value="INR">INR</Option>
+                                </Select>
+                                <Button type='primary' size='small' onClick={this.sureCellCurrency.bind(this,index)}>Sure</Button>
+                            </div>
+                        )
+                    }else{
+                        return '';
+                    }
+                }else{
+                    return text;
+                }
+            }
+        },{
+            title: 'Deducted Conv.',
+            dataIndex: 'deductedConv',
+        },{
+            title: 'Deducted Amt.',
+            dataIndex: 'deductedAmt',
+        },{
+            title: 'Finance Approve',
+            dataIndex: 'finApproStatus',
+            render:(text,record,index) => {
+                if(text == '0'){
+                    if(userRole == 'admin'){
+                        return(
+                            <div>
+                                <Select size="small" defaultValue="1" style={{ width: 100,marginRight:5 }} onChange={this.selectCellApprove.bind(this,index)}>
+                                    <Option value="1">Approve</Option>
+                                    <Option value="2">Reject</Option>
+                                </Select>
+                                <Button type='primary' size='small' onClick={this.sureCellApprove.bind(this,index)}>Sure</Button>
+                            </div>
+                        ) 
+                    }else{
+                        return <div><Badge status="processing"/>Pending-Audit</div>
+                    }
+                }else if(text == '1'){
+                    return <div><Badge status="success"/>Approved</div>
+                }else if(text == '2'){
+                    return <div><Badge status="error"/>Rejected</div>
+                }else{
+                    return <div><Badge status="default"/>Invoiced</div>
+                }
+            }
+        },{
+            title: 'Move to',
+            dataIndex: 'month',
+        }];
         return (
             <div>
                 <PageHeaderLayout>
@@ -402,7 +516,7 @@ export default class AdvStatement extends Component {
                     />
                     <Table 
                         rowSelection={rowSelection}
-                        columns={this.columns} 
+                        columns={columns} 
                         dataSource={dataList} 
                         loading={loading}
                         pagination={{

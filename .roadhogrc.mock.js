@@ -182,8 +182,8 @@ const proxy = {
         'data|100': [{ 
             'id|+1':1001, 
             name: '@name',
-            'invoiceAmount|1-100.2':34.23,
-            currency:'USD',
+            'invoiceAmount':null,
+            currency:null,
             'deductedConv|0.2':0.12,
             'deductedAmt':'USD',
             'finApproStatus|0-3': 0, 
