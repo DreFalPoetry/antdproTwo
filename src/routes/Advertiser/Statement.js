@@ -25,6 +25,8 @@ export default class AdvStatement extends Component {
             selectedRows:[],
             totalInvoiceAmount:[],
             invoiceModalvisible:false,
+            showGenerateInvoiveOption:false,
+            showApproveOrRejectOption:false,
             tableQuery:{
                 advAccountId:null,
                 employeeId:null,
@@ -95,8 +97,14 @@ export default class AdvStatement extends Component {
     }
 
     selectTableRow =  (selectedRowKeys, selectedRows) => {
+        this.setState({
+            showGenerateInvoiveOption:false,
+            showApproveOrRejectOption:false
+        });
         let totalInvoiceAmount = [];
+        let rowStatus = [];
         selectedRows.map((item) => {
+            rowStatus.push(item.finApproStatus);
             if(item.currency == "USD"){
                 if(totalInvoiceAmount.length){
                     totalInvoiceAmount.forEach((item1,index)=>{
@@ -119,6 +127,36 @@ export default class AdvStatement extends Component {
                 }
             }
         });
+        if(rowStatus.length){
+            let gerInv = true;
+            let apprOrRej = true;
+            rowStatus.map((item)=>{
+                if(item != '1'){
+                    gerInv = false;
+                }
+                if(item != '0'){
+                    apprOrRej = false;
+                }
+            })
+            if(gerInv){
+                this.setState({
+                    showGenerateInvoiveOption:true,
+                    showApproveOrRejectOption:false
+                })
+            };
+            if(apprOrRej){
+                this.setState({
+                    showGenerateInvoiveOption:false,
+                    showApproveOrRejectOption:true
+                })
+            }
+        }else{
+            this.setState({
+                showGenerateInvoiveOption:false,
+                showApproveOrRejectOption:false
+            })
+        }
+        
         this.setState({
             selectedRowKeys:selectedRowKeys,
             selectedRows:selectedRows,
@@ -325,6 +363,9 @@ export default class AdvStatement extends Component {
         const rowSelection = {
             selectedRowKeys:selectedRowKeys,
             onChange:this.selectTableRow,
+            getCheckboxProps:(record)=>{
+                return {disabled:(record.finApproStatus == '3' || record.finApproStatus == '2')}
+            }
         };
         const userRole = localStorage.getItem('antd-pro-authority');
         const columns = [{
@@ -343,8 +384,13 @@ export default class AdvStatement extends Component {
                                     <Input value={this.state.invoiceAmount[index]} 
                                         onChange={this.inputInvoiceAmount.bind(this,index)}
                                         size="small"
-                                        style={{width:80,marginRight:5}}/>
-                                    <Button type='primary' size="small" onClick={this.sureInvoiceAmount.bind(this,index,record)}>Sure</Button>
+                                        style={{width:80,marginRight:5}}
+                                    />
+                                    <Button 
+                                        type='primary' size="small" 
+                                        onClick={this.sureInvoiceAmount.bind(this,index,record)}>
+                                        Sure
+                                    </Button>
                                 </div> 
                     }else{
                         return ''
@@ -479,13 +525,25 @@ export default class AdvStatement extends Component {
                         </Row>
                         <Row>
                             <Col sm={{span:12}} xs={{span:24}}>
-                                <FormItem label="Batch Actions">
-                                    <Select style={{ width: 230 }} onChange={this.selectOption}>
+                            {
+                                this.state.showGenerateInvoiveOption?(
+                                    <FormItem label="Batch Actions">
+                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
                                         <Option value="3">Generate Invoice</Option>
-                                        <Option value="1">Approve</Option>
-                                        <Option value="2">Reject</Option>
                                     </Select>
-                                </FormItem>
+                                    </FormItem>
+                                ):null
+                            }
+                            {
+                                this.state.showApproveOrRejectOption?(
+                                    <FormItem label="Batch Actions">
+                                        <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
+                                            <Option value="1">Approve</Option>
+                                            <Option value="2">Reject</Option>
+                                        </Select>
+                                    </FormItem>
+                                ):null
+                            }
                             </Col>
                         </Row>
                     </Form>
