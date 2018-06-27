@@ -235,7 +235,7 @@ export default class AdvPaymentColle extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Customer">
                                     {getFieldDecorator('keyWords')(
-                                        <Input placeholder="Search by code or key word" autocomplete="off"/>
+                                        <Input placeholder="Search by code or key word" autoComplete="off"/>
                                     )}
                                 </FormItem>
                             </Col>

@@ -201,7 +201,6 @@ export default class AdvReoprt extends Component {
         const { getFieldDecorator } = this.props.form;
         const {dataList,employeeList,advAccountList,total,pageSize,pageCurrent,listHeaderInfo} = this.props.advReport;
         const {loading} = this.props;
-        console.log(listHeaderInfo);
         const columns = [{
             title: 'Date',
             children: [{
@@ -270,7 +269,7 @@ export default class AdvReoprt extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Customer">
                                     {getFieldDecorator('keyWords')(
-                                        <Input placeholder="Search by code or key word" autocomplete="off"/>
+                                        <Input placeholder="Search by code or key word" autoComplete="off"/>
                                     )}
                                 </FormItem>
                             </Col>
