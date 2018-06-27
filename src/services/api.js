@@ -101,3 +101,7 @@ export async function queryAdvInvRecord(params) {
 export async function queryAdvPaymentColle(params) {
     return request(`/api/advPaymentColle?${stringify(params)}`);
 }
+
+export async function queryAdvCredit(params) {
+    return request(`/api/advCredit?${stringify(params)}`);
+}

@@ -2,14 +2,22 @@ import React, { Component } from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
 import styles from './Report.less';
+import { connect } from 'dva';
 const FormItem = Form.Item;
 
 @Form.create()
+@connect(({ advReport,advCredit,loading }) => ({
+    advReport,
+    advCredit,
+    loading: loading.effects['advCredit/fetch'],  
+}))
 export default class AdvCredit extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            dataSource: [],
+            pageCurrent:1,
+            pageSize:20,
+            keyWords:''
         };
         this.columns = [{
                 title: 'Advertiser Name',
@@ -21,28 +29,17 @@ export default class AdvCredit extends Component {
                 title: 'Credit Level',
                 dataIndex: 'creditLevel'
             }];
-        this.data = [{
-            "uniqueKey": '1',
-            "id":23233,
-            "advName":"亚马逊",
-            "amount":"2313",
-            "creditLevel":"Poor", 
-        },{
-            "uniqueKey": '2',
-            "id":23233,
-            "advName":"亚马逊",
-            "amount":"2313",
-            "creditLevel":"Poor", 
-        },{
-            "uniqueKey": '3',
-            "id":23233,
-            "advName":"亚马逊",
-            "amount":"2313",
-            "creditLevel":"Poor", 
-        }];
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+        this.props.dispatch({
+            type: 'advCredit/fetch',
+            payload:{
+                pageCurrent:this.state.pageCurrent,
+                pageSize:this.state.pageSize
+            }
+        })
+    }
 
     componentWillUnmount() {}
 
@@ -50,13 +47,39 @@ export default class AdvCredit extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-              console.log('Received values of form: ', values);
+                console.log('Received values of form: ', values);
+                this.setState({
+                    keyWords:values.keyWords
+                },function(){
+                        this.props.dispatch({
+                            type: 'advCredit/fetch',
+                            payload:{
+                                ...this.state
+                            }
+                        })
+                })
             }
         });
     }
 
+    clearQuery = () => {
+        this.props.form.resetFields();
+        this.setState({
+            pageCurrent:1,
+            keyWords:''
+        },function(){
+            this.props.dispatch({
+                type: 'advCredit/fetch',
+                payload:{
+                    ...this.state
+                }
+            });
+        })
+    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
+        const {dataList,total,pageSize,pageCurrent} = this.props.advCredit;
         return (
             <div>
                 <PageHeaderLayout>
@@ -73,8 +96,8 @@ export default class AdvCredit extends Component {
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <div className={styles.searchBtnWrapper}>
-                                    <Button type="primary">QUERY</Button>
-                                    <Button style={{marginLeft:'10px'}}>RESET</Button>
+                                    <Button type="primary" htmlType="submit">QUERY</Button>
+                                    <Button style={{marginLeft:'10px'}} onClick={this.clearQuery}>RESET</Button>
                                 </div>
                             </Col>
                         </Row>
@@ -82,7 +105,7 @@ export default class AdvCredit extends Component {
                     </div>
                     <Table 
                         columns={this.columns} 
-                        dataSource={this.data} 
+                        dataSource={dataList} 
                         rowKey="uniqueKey"
                         bordered
                     />

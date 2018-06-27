@@ -181,7 +181,7 @@ export const getRouterData = app => {
         component: dynamicWrapper(app, ['advReport','advPaymentColle'], () => import('../routes/Advertiser/PaymentCollection')),
     },
     '/advertiser/advCredit': {
-        component: dynamicWrapper(app, [], () => import('../routes/Advertiser/Credit')),
+        component: dynamicWrapper(app, ['advReport','advCredit'], () => import('../routes/Advertiser/Credit')),
     },
     // '/user/:id': {
     //   component: dynamicWrapper(app, [], () => import('../routes/User/SomeComponent')),

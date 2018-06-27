@@ -225,6 +225,18 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    'GET /api/advCredit': mockjs.mock({
+        'code':0,
+        'data|50': [{ 
+            'id|+1':5001, 
+            advName: '@name',
+            'amount|100-10000':1333,
+            'creditLevel':'Poor'
+        }],
+        'total':50,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));
