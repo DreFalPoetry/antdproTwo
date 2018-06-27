@@ -2,19 +2,35 @@ import React, { Component } from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
 import styles from './Report.less';
+import { connect } from 'dva';
+import moment from 'moment';
 const FormItem = Form.Item;
 const { MonthPicker  } = DatePicker;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
 
 @Form.create()
+@connect(({ advReport,advPaymentColle,loading }) => ({
+    advReport,
+    advPaymentColle,
+    loading: loading.effects['advPaymentColle/fetch'],  
+}))
 export default class AdvPaymentColle extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            dataSource: [],
-            radioValue:1,
-
+            advAccountValue:'',
+            employeeValue:'',
+            employeeRole:"1",
+            tableQuery:{
+                employeeId:null,
+                advAccountId:null,
+                keyWords:'',
+                dueMonth:'',
+                campaignMonth:''
+            },
+            pageCurrent:1,
+            pageSize:20,
         };
         this.columns = [{
                 title: 'Advertiser Name',
@@ -41,43 +57,17 @@ export default class AdvPaymentColle extends Component {
                 title: 'Overdue Days',
                 dataIndex: 'overDueDays',
             }];
-        this.data = [{
-            "uniqueKey": '1',
-            "id":23233,
-            "advName":"亚马逊",
-            "payTo":"Moca Thchnology",
-            "campMonth":"2018-04-10", 
-            "invoiceAmount":"2313",
-            "colleAmount":"23232",
-            "badDebt":"231",
-            "overDueAmount":"22",
-            "overDueDays":"10"
-        },{
-            "uniqueKey": '2',
-            "id":23233,
-            "advName":"亚马逊",
-            "payTo":"Moca Thchnology",
-            "campMonth":"2018-04-10", 
-            "invoiceAmount":"2313",
-            "colleAmount":"23232",
-            "badDebt":"231",
-            "overDueAmount":"22",
-            "overDueDays":"10"
-        },{
-            "uniqueKey": '3',
-            "id":23233,
-            "advName":"亚马逊",
-            "payTo":"Moca Thchnology",
-            "campMonth":"2018-04-10", 
-            "invoiceAmount":"2313",
-            "colleAmount":"23232",
-            "badDebt":"231",
-            "overDueAmount":"22",
-            "overDueDays":"10"
-        }];
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+        this.props.dispatch({
+            type: 'advPaymentColle/fetch',
+            payload:{
+                pageCurrent:this.state.pageCurrent,
+                pageSize:this.state.pageSize
+            }
+        })
+    }
 
     componentWillUnmount() {}
 
@@ -85,39 +75,119 @@ export default class AdvPaymentColle extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-              console.log('Received values of form: ', values);
+                console.log('Received values of form: ', values);
+                let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords});
+                this.setState({
+                    tableQuery: data
+                },function(){
+                    this.props.dispatch({
+                        type: 'advPaymentColle/fetch',
+                        payload:{
+                            ...this.state.tableQuery,
+                            pageCurrent:this.state.pageCurrent,
+                            pageSize:this.state.pageSize
+                        }
+                    })
+                });
             }
         });
     }
 
-    handleSearch = (value) => {
+    dateRangeChange = (type,date, dateString) => {
+        if(type == 'campaignMonth' ){
+            this.tableQueryReplace({campaignMonth:dateString})
+        }else if(type == 'dueMonth'){
+            this.tableQueryReplace({dueMonth:dateString})
+        }
+    }
+
+    searchEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:null});
+            this.setState({
+                advAccountValue:value,
+            })
+            this.props.dispatch({
+                type:'advReport/fetchAdvAccount',
+                payload: {
+                    keyWord: value,
+                },
+            });
+        }else{
+            this.tableQueryReplace({employeeId:null});
+            this.setState({
+                employeeValue:value,
+            })
+            this.props.dispatch({
+                type:'advReport/fetchEmployee',
+                payload: {
+                    role:this.state.employeeRole,
+                    keyWord: value,
+                },
+            });
+        }
+    }
+
+    selectEmployeeOrAdvAccount = (type,value) => {
+        if(type === 'advAccount'){
+            this.tableQueryReplace({advAccountId:value});
+            this.setState({
+                advAccountValue:value
+            });
+        }else{
+            this.tableQueryReplace({employeeId:value});
+            this.setState({
+                employeeValue:value,
+            });
+        }
+    }
+
+    tableQueryReplace = (childObj) =>{
+        let data = Object.assign({}, this.state.tableQuery, childObj);
         this.setState({
-          dataSource: !value ? [] : [
-            value,
-            value + value,
-            value + value + value,
-          ],
+            tableQuery: data
         });
     }
 
-    onSelect = (value) => {
-        console.log('onSelect', value);
-    }
-
-    dateRangeChange = (date, dateString) => {
-        console.log(date, dateString);
-    }
-
-    radioChange = (e) => {
-        console.log('radio checked', e.target.value);
+    changeEmployeeRole = (value) => {
         this.setState({
-          radioValue: e.target.value,
+            employeeRole:value
+        })
+    }
+
+    clearQuery = () => {
+        this.props.form.resetFields();
+        this.props.dispatch({
+            type:'advReport/clearEmployeeAndAdvAccount'
         });
+        this.setState({
+            advAccountValue:'',
+            employeeValue:'',
+            employeeRole:"1",
+            tableQuery:{
+                employeeId:null,
+                advAccountId:null,
+                keyWords:'',
+                dueMonth:'',
+                campaignMonth:''
+            },
+            pageCurrent:1,
+        },function(){
+            this.props.dispatch({
+                type: 'advPaymentColle/fetch',
+                payload:{
+                    ...this.state.tableQuery,
+                    pageCurrent:this.state.pageCurrent,
+                    pageSize:this.state.pageSize
+                }
+            });
+        })
     }
 
     render() {
-        const { dataSource } = this.state;
         const { getFieldDecorator } = this.props.form;
+        const {employeeList,advAccountList} = this.props.advReport;
+        const {dataList,total,pageSize,pageCurrent} = this.props.advPaymentColle;
         return (
             <div>
                 <PageHeaderLayout>
@@ -135,36 +205,51 @@ export default class AdvPaymentColle extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Advertiser Account">
                                     <AutoComplete
-                                        dataSource={dataSource}
-                                        style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                       allowClear
+                                       value={this.state.advAccountValue}
+                                       dataSource={advAccountList}
+                                       style={{ width: 230 }}
+                                       onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
+                                       onSearch={this.searchEmployeeOrAdvAccount.bind(this,'advAccount')}
                                         placeholder="search advertiser account"
                                     />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Campaign Month">
-                                    <MonthPicker  onChange={this.dateRangeChange} />
+                                    <MonthPicker  
+                                        value={this.state.tableQuery.campaignMonth?moment(this.state.tableQuery.campaignMonth):null} 
+                                        onChange={this.dateRangeChange.bind(this,'campaignMonth')} 
+                                    />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Due Month">
-                                    <MonthPicker  onChange={this.dateRangeChange} />
+                                    <MonthPicker  
+                                        onChange={this.dateRangeChange.bind(this,'dueMonth')} 
+                                        value={this.state.tableQuery.dueMonth?moment(this.state.tableQuery.dueMonth):null} 
+                                    />
                                 </FormItem>
                             </Col>
                             <Col sm={{span:12}} xs={{span:24}}>
                                 <FormItem label="Employee">
-                                    <Select defaultValue="alipay" style={{ width: 100 }} className={styles.linkTypeSelect}>
-                                        <Option value="alipay">Sales</Option>
-                                        <Option value="bank">PM</Option>
+                                    <Select 
+                                        value={this.state.employeeRole}  
+                                        style={{ width: 100 }} 
+                                        className={styles.linkTypeSelect}
+                                        onChange={this.changeEmployeeRole}
+                                    >
+                                        <Option value="1">Sales</Option>
+                                        <Option value="0">PM</Option>
                                     </Select>
                                     <AutoComplete
+                                        allowClear
+                                        value={this.state.employeeValue}
                                         className={styles.linkTypeAutoSelect}
-                                        dataSource={dataSource}
-                                        style={{ width: 200 }}
-                                        onSelect={this.onSelect}
-                                        onSearch={this.handleSearch}
+                                        dataSource={employeeList}
+                                        style={{ width: 230 }}
+                                        onSelect={this.selectEmployeeOrAdvAccount.bind(this,'employee')}
+                                        onSearch={this.searchEmployeeOrAdvAccount.bind(this,'employee')}
                                         placeholder="search employee"
                                     />
                                 </FormItem>
@@ -172,15 +257,15 @@ export default class AdvPaymentColle extends Component {
                         </Row>
                         <Row>
                             <div className={styles.searchBtnWrapper}>
-                                <Button type="primary">QUERY</Button>
-                                <Button style={{marginLeft:'10px'}}>RESET</Button>
+                                <Button type="primary" htmlType="submit">QUERY</Button>
+                                <Button style={{marginLeft:'10px'}} onClick={this.clearQuery}>RESET</Button>
                             </div>
                         </Row>
                     </Form>
                     </div>
                     <Table 
                         columns={this.columns} 
-                        dataSource={this.data} 
+                        dataSource={dataList} 
                         rowKey="uniqueKey"
                         bordered
                     />

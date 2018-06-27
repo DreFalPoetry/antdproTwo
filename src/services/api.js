@@ -97,3 +97,7 @@ export async function queryAdvStatement(params) {
 export async function queryAdvInvRecord(params) {
     return request(`/api/advInvRecord?${stringify(params)}`);
 }
+
+export async function queryAdvPaymentColle(params) {
+    return request(`/api/advPaymentColle?${stringify(params)}`);
+}

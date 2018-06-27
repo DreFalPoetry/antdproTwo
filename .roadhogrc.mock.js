@@ -208,6 +208,23 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    'GET /api/advPaymentColle': mockjs.mock({
+        'code':0,
+        'data|100': [{ 
+            'id|+1':4001, 
+            advName: '@name',
+            'payTo':"MocaTechno",
+            campMonth:'@date',
+            'invoiceAmount|100-10000':1333,
+            'colleAmount|100-10000':2434,
+            'badDebt|50-200':120,
+            'overDueAmount|10-50':22,
+            'overDueDays|10-360':30
+        }],
+        'total':100,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));
