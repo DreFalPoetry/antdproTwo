@@ -104,10 +104,11 @@ export default class AdvInvRecord extends Component {
                 console.log('Received values of form: ', values);
                 let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords,invoiceNo:values.invoiceNo});
                 this.setState({
-                    tableQuery: data
+                    tableQuery: data,
+                    pageCurrent:1
                 },function(){
                     this.props.dispatch({
-                        type:'advStatement/fetch',
+                        type:'advInvRecord/fetch',
                         payload:{
                             ...this.state.tableQuery,
                             pageCurrent:this.state.pageCurrent,
@@ -220,11 +221,42 @@ export default class AdvInvRecord extends Component {
             }
         },function(){
             this.props.dispatch({
-                type: 'advStatement/fetch',
+                type: 'advInvRecord/fetch',
                 payload:{
                     ...this.state.tableQuery,
                     pageCurrent:this.state.pageCurrent,
                     pageSize:this.state.pageSize
+                }
+            });
+        })
+    }
+
+    pageSizeChange = (current, pageSize) => {
+        this.setState({
+            pageSize:pageSize,
+            pageCurrent:1
+        },function(){
+            this.props.dispatch({
+                type: 'advInvRecord/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:this.state.pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        });
+    }
+
+    pageChange = (page, pageSize) => {
+        this.setState({
+            pageCurrent:page
+        },function(){
+            this.props.dispatch({
+                type: 'advInvRecord/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:this.state.pageSize,
+                   pageCurrent:this.state.pageCurrent
                 }
             });
         })
@@ -312,6 +344,16 @@ export default class AdvInvRecord extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        pagination={{
+                            defaultCurrent:1,
+                            total:Number(total),
+                            showSizeChanger:true,
+                            pageSize:Number(pageSize),
+                            pageSizeOptions:['10','20','30','50','100'],
+                            onShowSizeChange:this.pageSizeChange,
+                            current:Number(pageCurrent), 
+                            onChange:this.pageChange
+                        }}
                         bordered
                         scroll={{ x: 1500 }}
                     />

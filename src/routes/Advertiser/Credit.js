@@ -49,6 +49,7 @@ export default class AdvCredit extends Component {
             if (!err) {
                 console.log('Received values of form: ', values);
                 this.setState({
+                    pageCurrent:1,
                     keyWords:values.keyWords
                 },function(){
                         this.props.dispatch({
@@ -67,6 +68,33 @@ export default class AdvCredit extends Component {
         this.setState({
             pageCurrent:1,
             keyWords:''
+        },function(){
+            this.props.dispatch({
+                type: 'advCredit/fetch',
+                payload:{
+                    ...this.state
+                }
+            });
+        })
+    }
+
+    pageSizeChange = (current, pageSize) => {
+        this.setState({
+            pageSize:pageSize,
+            pageCurrent:1
+        },function(){
+            this.props.dispatch({
+                type: 'advCredit/fetch',
+                payload:{
+                    ...this.state
+                }
+            });
+        });
+    }
+
+    pageChange = (page, pageSize) => {
+        this.setState({
+            pageCurrent:page
         },function(){
             this.props.dispatch({
                 type: 'advCredit/fetch',
@@ -107,6 +135,16 @@ export default class AdvCredit extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        pagination={{
+                            defaultCurrent:1,
+                            total:Number(total),
+                            showSizeChanger:true,
+                            pageSize:Number(pageSize),
+                            pageSizeOptions:['10','20','30','50','100'],
+                            onShowSizeChange:this.pageSizeChange,
+                            current:Number(pageCurrent), 
+                            onChange:this.pageChange
+                        }}
                         bordered
                     />
                     </Card>

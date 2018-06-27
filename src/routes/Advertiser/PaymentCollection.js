@@ -78,7 +78,8 @@ export default class AdvPaymentColle extends Component {
                 console.log('Received values of form: ', values);
                 let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords});
                 this.setState({
-                    tableQuery: data
+                    tableQuery: data,
+                    pageCurrent:1
                 },function(){
                     this.props.dispatch({
                         type: 'advPaymentColle/fetch',
@@ -184,6 +185,37 @@ export default class AdvPaymentColle extends Component {
         })
     }
 
+    pageSizeChange = (current, pageSize) => {
+        this.setState({
+            pageSize:pageSize,
+            pageCurrent:1
+        },function(){
+            this.props.dispatch({
+                type: 'advPaymentColle/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:this.state.pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        });
+    }
+
+    pageChange = (page, pageSize) => {
+        this.setState({
+            pageCurrent:page
+        },function(){
+            this.props.dispatch({
+                type: 'advPaymentColle/fetch',
+                payload:{
+                   ...this.state.tableQuery,
+                   pageSize:this.state.pageSize,
+                   pageCurrent:this.state.pageCurrent
+                }
+            });
+        })
+    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
         const {employeeList,advAccountList} = this.props.advReport;
@@ -267,6 +299,16 @@ export default class AdvPaymentColle extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        pagination={{
+                            defaultCurrent:1,
+                            total:Number(total),
+                            showSizeChanger:true,
+                            pageSize:Number(pageSize),
+                            pageSizeOptions:['10','20','30','50','100'],
+                            onShowSizeChange:this.pageSizeChange,
+                            current:Number(pageCurrent), 
+                            onChange:this.pageChange
+                        }}
                         bordered
                     />
                     </Card>

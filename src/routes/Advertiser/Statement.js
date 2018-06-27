@@ -83,7 +83,8 @@ export default class AdvStatement extends Component {
                 console.log('Received values of form: ', values);
                 let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords});
                 this.setState({
-                    tableQuery: data
+                    tableQuery: data,
+                    pageCurrent:1
                 },function(){
                     this.props.dispatch({
                         type:'advStatement/fetch',
@@ -230,7 +231,7 @@ export default class AdvStatement extends Component {
             pageCurrent:1
         },function(){
             this.props.dispatch({
-                type: 'advReport/fetch',
+                type: 'advStatement/fetch',
                 payload:{
                    ...this.state.tableQuery,
                    pageSize:this.state.pageSize,
@@ -245,7 +246,7 @@ export default class AdvStatement extends Component {
             pageCurrent:page
         },function(){
             this.props.dispatch({
-                type: 'advReport/fetch',
+                type: 'advStatement/fetch',
                 payload:{
                    ...this.state.tableQuery,
                    pageSize:this.state.pageSize,
