@@ -231,6 +231,7 @@ export default class AdvReoprt extends Component {
     render() {
         const { getFieldDecorator } = this.props.form;
         const {dataList,employeeList,advAccountList,total,pageSize,pageCurrent} = this.props.advReport;
+        const {loading} = this.props;
         return (
             <div>
                 <PageHeaderLayout>
@@ -310,6 +311,7 @@ export default class AdvReoprt extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        loading={loading}
                         pagination={{
                             defaultCurrent:1,
                             total:Number(total),

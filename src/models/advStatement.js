@@ -9,9 +9,7 @@ export default {
         dataList:[],
         total:0,
         pageSize:20,
-        pageCurrent:1,
-        employeeList:[],
-        advAccountList:[],
+        pageCurrent:1
     },
 
     effects: {
@@ -43,9 +41,7 @@ export default {
                 dataList:[],
                 total:0,
                 pageSize:20,
-                pageCurrent:1,
-                employeeList:[],
-                advAccountList:[],
+                pageCurrent:1
             };
         },
     },

@@ -95,7 +95,11 @@ export default class AdvInvRecord extends Component {
         })
     }
 
-    componentWillUnmount() {}
+    componentWillUnmount() {
+        this.props.dispatch({
+            type:'advInvRecord/clear'
+        })
+    }
 
     submitSearch = (e) => {
         e.preventDefault();
@@ -266,6 +270,7 @@ export default class AdvInvRecord extends Component {
         const {dataList,total,pageSize,pageCurrent} = this.props.advInvRecord;
         const {employeeList,advAccountList} = this.props.advReport;
         const { getFieldDecorator } = this.props.form;
+        const {loading} = this.props;
         return (
             <div>
                 <PageHeaderLayout>
@@ -344,6 +349,7 @@ export default class AdvInvRecord extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        loading={loading}
                         pagination={{
                             defaultCurrent:1,
                             total:Number(total),

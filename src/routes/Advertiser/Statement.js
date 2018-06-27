@@ -14,7 +14,7 @@ const Option = Select.Option;
 @connect(({ advReport,advStatement,loading }) => ({
     advReport,
     advStatement,
-    loading: loading.effects['advReport/fetch'],  
+    loading: loading.effects['advStatement/fetch'],  
 }))
 export default class AdvStatement extends Component {
     constructor(props) {
@@ -74,7 +74,11 @@ export default class AdvStatement extends Component {
         })
     }
 
-    componentWillUnmount() {}
+    componentWillUnmount() {
+        this.props.dispatch({
+            type:'advStatement/clear'
+        })
+    }
 
     submitSearch = (e) => {
         e.preventDefault();
@@ -289,6 +293,7 @@ export default class AdvStatement extends Component {
         const {employeeList,advAccountList} = this.props.advReport;
         const {dataList,total,pageSize,pageCurrent} = this.props.advStatement;
         const { getFieldDecorator } = this.props.form;
+        const {loading} = this.props;
         const rowSelection = {
             selectedRowKeys:selectedRowKeys,
             onChange:this.selectTableRow,
@@ -399,6 +404,7 @@ export default class AdvStatement extends Component {
                         rowSelection={rowSelection}
                         columns={this.columns} 
                         dataSource={dataList} 
+                        loading={loading}
                         pagination={{
                             defaultCurrent:1,
                             total:Number(total),
