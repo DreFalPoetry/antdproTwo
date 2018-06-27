@@ -276,7 +276,7 @@ export default class AdvInvRecord extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Customer">
                                     {getFieldDecorator('keyWords')(
-                                        <Input placeholder="Search by code or key word" />
+                                        <Input placeholder="Search by code or key word" autocomplete="off"/>
                                     )}
                                 </FormItem>
                             </Col>
