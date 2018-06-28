@@ -112,6 +112,12 @@ export async function queryAdvInvRecord(params) {
     return request(`/api/advInvRecord?${stringify(params)}`);
 }
 
+export async function deleteAdvInvRecord(id) {
+    return request('/api/advInvRecord/'+id, {
+        method: 'DELETE'
+    });
+}
+
 export async function queryAdvPaymentColle(params) {
     return request(`/api/advPaymentColle?${stringify(params)}`);
 }

@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table} from 'antd';
+import {Card,Form,Row, Col,  Icon, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,message} from 'antd';
 import styles from './Report.less';
 import CollectModal from './CollectModal';
 import { connect } from 'dva';
 import moment from 'moment';
+import {deleteAdvInvRecord} from '../../services/api';
+import{deepCloneObj} from '../../utils/commonFunc';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -79,8 +81,8 @@ export default class AdvInvRecord extends Component {
             },{
                 title: '',
                 dataIndex: '',
-                render:() =>{
-                    return <div><Button>Destroy</Button><Button onClick={this.openCollectModal}>Collect</Button></div> 
+                render:(text,record,index) =>{
+                    return <div><Button onClick={this.deleteRecord.bind(this,record)}>Destroy</Button><Button onClick={this.openCollectModal.bind(this,record)}>Collect</Button></div> 
                 }
             }];
     }
@@ -99,6 +101,29 @@ export default class AdvInvRecord extends Component {
         this.props.dispatch({
             type:'advInvRecord/clear'
         })
+    }
+
+    //删除一条记录
+    deleteRecord = (record) => {
+        const response = deleteAdvInvRecord('1001');
+        response.then(res => {return res;})
+        .then(json => {
+            let result = JSON.parse(json);
+            if(result.code == 0){
+                const {dataList} = this.props.advInvRecord;
+                let tempDataList = deepCloneObj(dataList);
+                tempDataList.forEach(function(item,ind){
+                    if(item.uniqueKey==record.uniqueKey){
+                        tempDataList.splice(ind,1);
+                    }
+                });
+                this.props.dispatch({
+                    type:'advInvRecord/asyncDataList',
+                    payload: tempDataList,
+                })
+                message.success('save');
+            }
+        });
     }
 
     submitSearch = (e) => {
