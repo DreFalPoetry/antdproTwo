@@ -111,7 +111,7 @@ export default class AdvStatement extends Component {
             response.then(res => {return res;})
             .then(json => {
                 if(json.code == 0){
-                    const {dataList} = this.props.advStatement;
+                    const {dataList,headerInfo} = this.props.advStatement;
                     let tempDataList = deepCloneObj(dataList);
                     tempDataList.forEach(function(item,ind){
                         records.map((record)=>{
@@ -123,6 +123,16 @@ export default class AdvStatement extends Component {
                     this.props.dispatch({
                         type:'advStatement/asyncDataList',
                         payload: tempDataList,
+                    });
+                    let headerInfoTemp = deepCloneObj(headerInfo);
+                    if(value == 1){
+                        headerInfoTemp.approved += ids.length; 
+                    }else{
+                        headerInfoTemp.rejected += ids.length;
+                    }
+                    this.props.dispatch({
+                        type:'advStatement/asyncHeaderInfo',
+                        payload: headerInfoTemp,
                     });
                     message.success('save');
                     this.cleanSelectedRows();
@@ -234,7 +244,7 @@ export default class AdvStatement extends Component {
             response.then(res => {return res;})
             .then(json => {
                 if(json.code == 0){
-                    const {dataList} = this.props.advStatement;
+                    const {dataList,headerInfo} = this.props.advStatement;
                     let tempDataList = deepCloneObj(dataList);
                     let records = deepCloneObj(this.state.chooseRecords);
                     tempDataList.forEach(function(item,ind){
@@ -249,6 +259,12 @@ export default class AdvStatement extends Component {
                         payload: tempDataList,
                     });
                     message.success('save');
+                    let headerInfoTemp = deepCloneObj(headerInfo);
+                    headerInfoTemp.invoiced += this.state.chooseIds.length;
+                    this.props.dispatch({
+                        type:'advStatement/asyncHeaderInfo',
+                        payload: headerInfoTemp,
+                    });
                     this.cleanSelectedRows();
                     this.setState({
                         chooseIds:[],
@@ -474,7 +490,7 @@ export default class AdvStatement extends Component {
         .then(json => {
             if(json.code == 0){
                 record.finApproStatus = itemApprove;
-                const {dataList} = this.props.advStatement;
+                const {dataList,headerInfo} = this.props.advStatement;
                 let tempDataList = deepCloneObj(dataList);
                 tempDataList.forEach(function(item,ind){
                     if(item.uniqueKey==record.uniqueKey){
@@ -484,7 +500,17 @@ export default class AdvStatement extends Component {
                 this.props.dispatch({
                     type:'advStatement/asyncDataList',
                     payload: tempDataList,
-                })
+                });
+                let headerInfoTemp = deepCloneObj(headerInfo);
+                if(itemApprove == 1){
+                    headerInfoTemp.approved += 1; 
+                }else{
+                    headerInfoTemp.rejected += 1;
+                }
+                this.props.dispatch({
+                    type:'advStatement/asyncHeaderInfo',
+                    payload: headerInfoTemp,
+                });
                 message.success('save');
             }
         });
@@ -515,7 +541,7 @@ export default class AdvStatement extends Component {
     render() {
         const {selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
         const {employeeList,advAccountList} = this.props.advReport;
-        const {dataList,total,pageSize,pageCurrent} = this.props.advStatement;
+        const {dataList,total,pageSize,pageCurrent,headerInfo} = this.props.advStatement;
         const { getFieldDecorator } = this.props.form;
         const {loading} = this.props;
         const rowSelection = {
@@ -758,6 +784,9 @@ export default class AdvStatement extends Component {
                         }}
                         rowKey="uniqueKey"
                         bordered
+                        footer={() => (
+                            <div>{headerInfo.total} campaigns，已开票{headerInfo.invoiced}个，Rejected{headerInfo.rejected}个，Approved未开票{headerInfo.approved}个</div>
+                        )}
                     />
                     </Card>
                 </PageHeaderLayout>

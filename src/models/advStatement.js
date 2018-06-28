@@ -9,7 +9,13 @@ export default {
         dataList:[],
         total:0,
         pageSize:20,
-        pageCurrent:1
+        pageCurrent:1,
+        headerInfo:{
+            total:null,
+            invoiced:null,
+            rejected:null,
+            approved:null
+        }
     },
 
     effects: {
@@ -18,12 +24,17 @@ export default {
             const finallResult = callbackDeal(response);
             if (finallResult == 'successCallBack') {
                 const dataList = response.data;
+                const headerInfo = response.headerInfo;
                 dataList.filter((item,index) => {
                     item.uniqueKey = index+1;
                 });
                 yield put({
                     type: 'asyncDataList',
                     payload: dataList,
+                });
+                yield put({
+                    type: 'asyncHeaderInfo',
+                    payload: headerInfo,
                 });
             }
         },
@@ -36,12 +47,24 @@ export default {
                 dataList:payload,
             };
         },
+        asyncHeaderInfo(state, { payload }) {
+            return {
+                ...state,
+                headerInfo:payload,
+            };
+        },
         clear() {
             return {
                 dataList:[],
                 total:0,
                 pageSize:20,
-                pageCurrent:1
+                pageCurrent:1,
+                headerInfo:{
+                    total:null,
+                    invoiced:null,
+                    rejected:null,
+                    approved:null
+                }
             };
         },
     },

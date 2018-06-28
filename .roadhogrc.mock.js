@@ -189,6 +189,12 @@ const proxy = {
             'finApproStatus|0-3': 0, 
             month:'@date',
         }],
+        "headerInfo":{
+            "total":32,
+            "invoiced":18,
+            "rejected":4,
+            "approved":3
+        },
         'total':100,
         'pageSize':20,
         'pageCurrent':1
