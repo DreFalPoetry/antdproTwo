@@ -94,6 +94,13 @@ export async function queryAdvStatement(params) {
     return request(`/api/advStatement?${stringify(params)}`);
 }
 
+export async function advStatementUpdates(id,params) {
+    return request('/api/advStatement/'+id, {
+        method: 'PUT',
+        body: params,
+    });
+}
+
 export async function queryAdvInvRecord(params) {
     return request(`/api/advInvRecord?${stringify(params)}`);
 }

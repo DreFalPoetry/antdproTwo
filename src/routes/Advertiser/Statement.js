@@ -1,11 +1,12 @@
 import React, { Component ,Fragment} from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge } from 'antd';
+import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge,Popconfirm, message } from 'antd';
 import commonStyle from './Report.less';
 import InvoiceModal from './GenerateInvoiceModal';
 import { connect } from 'dva';
 import moment from 'moment';
 import {deepCloneObj} from '../../utils/commonFunc';
+import {advStatementUpdates} from '../../services/api';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -307,27 +308,40 @@ export default class AdvStatement extends Component {
 
     //表格输入invoiceAmount
     inputInvoiceAmount = (index,e) => {
+        const { value } = e.target;
+        const reg = /^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/;
         let tempInvoiceAmount = this.state.invoiceAmount;
-        tempInvoiceAmount[index] = e.target.value;
-        this.setState({
-            invoiceAmount:tempInvoiceAmount
-        })
+        if ((!isNaN(value) && reg.test(value)) || !value) {
+            tempInvoiceAmount[index] = value;
+            this.setState({
+                invoiceAmount:tempInvoiceAmount
+            })
+        }
     }
 
-    sureInvoiceAmount = (index,record) => {
+    confirmInvoiceAmount = (index,record) => {
         console.log(this.state.invoiceAmount[index]);
-        record.invoiceAmount = this.state.invoiceAmount[index];
-        const {dataList} = this.props.advStatement;
-        let tempDataList = deepCloneObj(dataList);
-        tempDataList.forEach(function(item,ind){
-            if(item.uniqueKey==record.uniqueKey){
-                tempDataList.splice(ind,1,record);
-            }
-        });
-        this.props.dispatch({
-            type:'advStatement/asyncDataList',
-            payload: tempDataList,
-        })
+        if(this.state.invoiceAmount[index]){
+            const response = advStatementUpdates('1001',{invoiAmount:this.state.invoiceAmount[index]});
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    record.invoiceAmount = this.state.invoiceAmount[index];
+                    const {dataList} = this.props.advStatement;
+                    let tempDataList = deepCloneObj(dataList);
+                    tempDataList.forEach(function(item,ind){
+                        if(item.uniqueKey==record.uniqueKey){
+                            tempDataList.splice(ind,1,record);
+                        }
+                    });
+                    this.props.dispatch({
+                        type:'advStatement/asyncDataList',
+                        payload: tempDataList,
+                    })
+                    message.success('save');
+                }
+            });
+        }
     }
 
     selectCellCurrency = (index,value) => {
@@ -386,11 +400,15 @@ export default class AdvStatement extends Component {
                                         size="small"
                                         style={{width:80,marginRight:5}}
                                     />
-                                    <Button 
-                                        type='primary' size="small" 
-                                        onClick={this.sureInvoiceAmount.bind(this,index,record)}>
-                                        Sure
-                                    </Button>
+                                    <Popconfirm 
+                                        title="Are you sure?" 
+                                        onConfirm={this.confirmInvoiceAmount.bind(this,index,record)} 
+                                        okText="Yes" cancelText="No">
+                                        <Button 
+                                            type='primary' size="small" >
+                                            Sure
+                                        </Button>
+                                    </Popconfirm>
                                 </div> 
                     }else{
                         return ''
@@ -525,25 +543,23 @@ export default class AdvStatement extends Component {
                         </Row>
                         <Row>
                             <Col sm={{span:12}} xs={{span:24}}>
+                            <FormItem label="Batch Actions">
                             {
                                 this.state.showGenerateInvoiveOption?(
-                                    <FormItem label="Batch Actions">
                                     <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
                                         <Option value="3">Generate Invoice</Option>
                                     </Select>
-                                    </FormItem>
                                 ):null
                             }
                             {
                                 this.state.showApproveOrRejectOption?(
-                                    <FormItem label="Batch Actions">
-                                        <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
-                                            <Option value="1">Approve</Option>
-                                            <Option value="2">Reject</Option>
+                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
+                                        <Option value="1">Approve</Option>
+                                        <Option value="2">Reject</Option>
                                         </Select>
-                                    </FormItem>
                                 ):null
                             }
+                            </FormItem>
                             </Col>
                         </Row>
                     </Form>

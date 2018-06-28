@@ -183,7 +183,7 @@ const proxy = {
             'id|+1':1001, 
             name: '@name',
             'invoiceAmount':null,
-            currency:null,
+            currency:'USD',
             'deductedConv|0.2':0.12,
             'deductedAmt':'USD',
             'finApproStatus|0-3': 0, 
@@ -193,6 +193,12 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    'PUT /api/advStatement/1001': (req, res) => {
+        res.send({
+            code:0,
+            info:"success" 
+        });
+    },
     'GET /api/advInvRecord': mockjs.mock({
         'code':0,
         'data|100': [{ 
