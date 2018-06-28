@@ -68,7 +68,6 @@ export default class AdvStatement extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
                 let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords});
                 this.setState({
                     tableQuery: data,
@@ -156,19 +155,23 @@ export default class AdvStatement extends Component {
                 totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
             }
         });
+        
         let arrTemp1 = [];
         if(totalInvoiceAmount.length){
             let usdTotal = 0;
             let inrTotal = 0;
             totalInvoiceAmount.map((item)=>{
-                if(item.currency == 'USD'){
+                if(item.type == 'USD'){
                     usdTotal+= item.total;
-                    arrTemp1.push({'type':item.type,'total':usdTotal})
-                }else{
+                }else if(item.type == 'INR'){
                     inrTotal+=item.total;
-                    arrTemp1.push({'type':item.type,'total':inrTotal})
                 }
-            })
+            });
+            arrTemp1.push({'type':'USD','total':usdTotal})
+            arrTemp1.push({'type':'INR','total':inrTotal})
+            this.setState({ totalInvoiceAmount:arrTemp1});
+        }else{
+            this.setState({ totalInvoiceAmount:[]});
         }
         if(rowStatus.length){
             let gerInv = true;
@@ -203,7 +206,6 @@ export default class AdvStatement extends Component {
         this.setState({
             selectedRowKeys:selectedRowKeys,
             selectedRows:selectedRows,
-            totalInvoiceAmount:arrTemp1
         })
     }
 
@@ -752,7 +754,7 @@ export default class AdvStatement extends Component {
                             {totalInvoiceAmount.map((item,index)=> (
                             <span style={{ marginLeft: 8 }} key={index}>
                                 <span style={{ fontWeight: 600 }}>
-                                    {item.total + " " +item.type}
+                                    {item.total? item.total + " " +item.type:null}
                                 </span>
                             </span>
                             ))}
