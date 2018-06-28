@@ -197,6 +197,7 @@ export default class AdvStatement extends Component {
         })
     }
 
+    //checkbox选择项清空
     cleanSelectedRows = () => {
         this.selectTableRow([],[])
         this.setState({
@@ -205,7 +206,11 @@ export default class AdvStatement extends Component {
         })
     }
 
+    //点击取消弹框消失，数据重置
     cancelGenerate = () => {
+        const form = this.formRef.props.form;
+        form.resetFields();
+        this.cleanSelectedRows();
         this.setState({ invoiceModalvisible: false });
     }
 

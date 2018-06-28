@@ -5,7 +5,7 @@ import styles from './Report.less';
 import CollectModal from './CollectModal';
 import { connect } from 'dva';
 import moment from 'moment';
-import {deleteAdvInvRecord} from '../../services/api';
+import {deleteAdvInvRecord,advInvRecordUpdate} from '../../services/api';
 import{deepCloneObj} from '../../utils/commonFunc';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
@@ -34,7 +34,8 @@ export default class AdvInvRecord extends Component {
                 employeeId:null,
                 advAccountId:null,
                 month:''
-            }
+            },
+            tempRecord:{}
         };
         this.columns = [{
                 title: 'Advertiser Name',
@@ -153,19 +154,54 @@ export default class AdvInvRecord extends Component {
         this.tableQueryReplace({month:dateString});
     }
 
+    //点击弹框的取消按钮
     cancelCreat = () => {
         this.setState({ collectModalvisible: false });
+        const form = this.formRef.props.form;
+        form.resetFields();
     }
 
-    createCollection = () => {
+    //点击弹框传数据
+    createCollection = (date) => {
         const form = this.formRef.props.form;
         form.validateFields((err, values) => {
-          if (err) {
-            return;
-          }
-          console.log('Received values of form: ', values);
-          form.resetFields();
-          this.setState({ collectModalvisible: false });
+            if (err) {
+                return;
+            }
+            let data = {};
+            data.remark = values.remark;
+            data.collecAmount = values.amount;
+            data.currency = values.currency?values.currency:'USD';
+            data.dateOnColl = date;
+            let record =deepCloneObj(this.state.tempRecord);
+            record.remark = values.remark;
+            record.collecAmount = values.amount;
+            record.currency = values.currency?values.currency:'USD';
+            record.dataOnColl = date;
+            const response = advInvRecordUpdate('1001',data);
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    const {dataList} = this.props.advInvRecord;
+                    let tempDataList = deepCloneObj(dataList);
+                    tempDataList.forEach(function(item,ind){
+                        if(item.uniqueKey==record.uniqueKey){
+                            tempDataList.splice(ind,1,record);
+                        }
+                    });
+                    this.props.dispatch({
+                        type:'advInvRecord/asyncDataList',
+                        payload: tempDataList,
+                    })
+                    message.success('save');
+                    form.resetFields();
+                    this.setState({ 
+                        collectModalvisible: false,
+                        tempRecord:{}
+                    });
+                }
+            })
+       
         });
     }
 
@@ -173,8 +209,11 @@ export default class AdvInvRecord extends Component {
         this.formRef = formRef;
     }
 
-    openCollectModal = () => {
+    openCollectModal = (record) => {
         this.setState({ collectModalvisible: true });
+        this.setState({
+            tempRecord:record
+        });
     }
 
     searchEmployeeOrAdvAccount = (type,value) => {

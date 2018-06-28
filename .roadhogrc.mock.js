@@ -234,6 +234,12 @@ const proxy = {
             info:"success" 
         });
     },
+    'PUT /api/advInvRecord/1001': (req, res) => {
+        res.send({
+            code:0,
+            info:"success" 
+        });
+    },
     'GET /api/advPaymentColle': mockjs.mock({
         'code':0,
         'data|100': [{ 

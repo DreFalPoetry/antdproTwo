@@ -7,9 +7,14 @@ const { TextArea } = Input;
 
 @Form.create()
 export default class CollectModal extends Component {
+    state={
+        dateOnColl:''
+    }
 
     collectionDateChange = (date, dateString) => {
-        console.log(date, dateString);
+        this.setState({
+            dateOnColl:dateString
+        })
     }
 
     currencySelect = (value) => {
@@ -25,7 +30,7 @@ export default class CollectModal extends Component {
           title="Generate Invoice"
           okText="Confirm"
           onCancel={onCancel}
-          onOk={onCreate}
+          onOk={onCreate.bind(this,this.state.dateOnColl)}
         >   
         <div className={`${styles.modalFormWrapper} ${styles.collectModal}`}>
             <Form layout="inline">
@@ -35,7 +40,7 @@ export default class CollectModal extends Component {
                             {getFieldDecorator('amount', {
                                 rules: [{ required: true, message: 'Please input collect amount' }],
                             })(
-                                <Input/>
+                                <Input autoComplete="off"/>
                             )}
                         </FormItem>
                     </Col>
