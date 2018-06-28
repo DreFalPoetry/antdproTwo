@@ -183,7 +183,7 @@ const proxy = {
             'id|+1':1001, 
             name: '@name',
             'invoiceAmount':null,
-            currency:'USD',
+            currency:null,
             'deductedConv|0.2':0.12,
             'deductedAmt':'USD',
             'finApproStatus|0-3': 0, 

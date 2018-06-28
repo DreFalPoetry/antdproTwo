@@ -106,28 +106,26 @@ export default class AdvStatement extends Component {
         let rowStatus = [];
         selectedRows.map((item) => {
             rowStatus.push(item.finApproStatus);
-            if(item.currency == "USD"){
-                if(totalInvoiceAmount.length){
-                    totalInvoiceAmount.forEach((item1,index)=>{
-                        if(item1.type == 'USD'){
-                            item1.total += Number(item.invoiceAmount) 
-                        }
-                    })
-                }else{
-                    totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
-                }
-            }else if(item.currency == "INR"){
-                if(totalInvoiceAmount.length){
-                    totalInvoiceAmount.forEach((item1,index)=>{
-                        if(item1.type == 'INR'){
-                            item1.total += Number(item.invoiceAmount) 
-                        }
-                    })
-                }else{
-                    totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
-                }
+            if(item.currency == "USD"){  
+                totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
+            }else if(item.currency == "INR"){   
+                totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
             }
         });
+        let arrTemp1 = [];
+        if(totalInvoiceAmount.length){
+            let usdTotal = 0;
+            let inrTotal = 0;
+            totalInvoiceAmount.map((item)=>{
+                if(item.currency == 'USD'){
+                    usdTotal+= item.total;
+                    arrTemp1.push({'type':item.type,'total':usdTotal})
+                }else{
+                    inrTotal+=item.total;
+                    arrTemp1.push({'type':item.type,'total':inrTotal})
+                }
+            })
+        }
         if(rowStatus.length){
             let gerInv = true;
             let apprOrRej = true;
@@ -161,7 +159,7 @@ export default class AdvStatement extends Component {
         this.setState({
             selectedRowKeys:selectedRowKeys,
             selectedRows:selectedRows,
-            totalInvoiceAmount:totalInvoiceAmount
+            totalInvoiceAmount:arrTemp1
         })
     }
 
@@ -320,7 +318,6 @@ export default class AdvStatement extends Component {
     }
 
     confirmInvoiceAmount = (index,record) => {
-        console.log(this.state.invoiceAmount[index]);
         if(this.state.invoiceAmount[index]){
             const response = advStatementUpdates('1001',{invoiAmount:this.state.invoiceAmount[index]});
             response.then(res => {return res;})
@@ -344,6 +341,7 @@ export default class AdvStatement extends Component {
         }
     }
 
+    //row选择当前行的 currency
     selectCellCurrency = (index,value) => {
         let tempCellCurrency = this.state.cellCurrency;
         tempCellCurrency[index] = value;
@@ -352,8 +350,34 @@ export default class AdvStatement extends Component {
         })
     }
 
-    sureCellCurrency = (index) => {
-        console.log(this.state.cellCurrency[index]);
+    //确定当前行的currency
+    sureCellCurrency = (index,record) => {
+        let itemCurrency;
+        if(!this.state.cellCurrency[index]){
+            itemCurrency = 'USD'
+        }else{
+            itemCurrency = this.state.cellCurrency[index];
+        }
+        const response = advStatementUpdates('1001',{currency:itemCurrency});
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    record.currency = itemCurrency;
+                    const {dataList} = this.props.advStatement;
+                    let tempDataList = deepCloneObj(dataList);
+                    tempDataList.forEach(function(item,ind){
+                        if(item.uniqueKey==record.uniqueKey){
+                            tempDataList.splice(ind,1,record);
+                        }
+                    });
+                    this.props.dispatch({
+                        type:'advStatement/asyncDataList',
+                        payload: tempDataList,
+                    })
+                    message.success('save');
+                }
+            });
+
     }
 
     selectCellApprove = (index,value) => {
@@ -364,8 +388,32 @@ export default class AdvStatement extends Component {
         });
     }
 
-    sureCellApprove = (index) => {
-        console.log(this.state.cellApprove[index]);
+    sureCellApprove = (index,record) => {
+        let itemApprove;
+        if(!this.state.cellApprove[index]){
+            itemApprove = '1'
+        }else{
+            itemApprove = this.state.cellApprove[index];
+        }
+        const response = advStatementUpdates('1001',{status:itemApprove});
+        response.then(res => {return res;})
+        .then(json => {
+            if(json.code == 0){
+                record.finApproStatus = itemApprove;
+                const {dataList} = this.props.advStatement;
+                let tempDataList = deepCloneObj(dataList);
+                tempDataList.forEach(function(item,ind){
+                    if(item.uniqueKey==record.uniqueKey){
+                        tempDataList.splice(ind,1,record);
+                    }
+                });
+                this.props.dispatch({
+                    type:'advStatement/asyncDataList',
+                    payload: tempDataList,
+                })
+                message.success('save');
+            }
+        });
     }
 
     render() {
@@ -430,7 +478,7 @@ export default class AdvStatement extends Component {
                                     <Option value="USD">USD</Option>
                                     <Option value="INR">INR</Option>
                                 </Select>
-                                <Button type='primary' size='small' onClick={this.sureCellCurrency.bind(this,index)}>Sure</Button>
+                                <Button type='primary' size='small' onClick={this.sureCellCurrency.bind(this,index,record)}>Sure</Button>
                             </div>
                         )
                     }else{
@@ -458,7 +506,7 @@ export default class AdvStatement extends Component {
                                     <Option value="1">Approve</Option>
                                     <Option value="2">Reject</Option>
                                 </Select>
-                                <Button type='primary' size='small' onClick={this.sureCellApprove.bind(this,index)}>Sure</Button>
+                                <Button type='primary' size='small' onClick={this.sureCellApprove.bind(this,index,record)}>Sure</Button>
                             </div>
                         ) 
                     }else{
@@ -568,10 +616,9 @@ export default class AdvStatement extends Component {
                         style={{marginBottom:"5px"}}
                         message={
                         <Fragment>
-                             Selected <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> Campaigns&nbsp;&nbsp;
+                             Selected <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> Campaigns&nbsp;&nbsp; Total Invoice Amount:&nbsp;
                             {totalInvoiceAmount.map((item,index)=> (
                             <span style={{ marginLeft: 8 }} key={index}>
-                                Total Invoice Amount:&nbsp;
                                 <span style={{ fontWeight: 600 }}>
                                     {item.total + " " +item.type}
                                 </span>
