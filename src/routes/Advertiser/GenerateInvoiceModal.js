@@ -1,18 +1,42 @@
 import React, { Component } from 'react';
 import { Button, Modal, Form, Input, Radio,DatePicker,Select,Row,Col  } from 'antd';
 import styles from './Report.less';
+import moment from 'moment';
+import {getTheDate} from '../../utils/commonFunc';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
 @Form.create()
 export default class InvoiceModal extends Component {
+    state = {
+        invDate:'',
+        dueOnDate:''
+    }
 
     invoicedateChange = (date, dateString) => {
-        console.log(date, dateString);
+        this.setState({
+            invDate:dateString
+        },function(){
+            let dueOndate = getTheDate(this.state.invDate,30);
+            this.setState({
+                dueOnDate:dueOndate
+            });
+            this.props.form.setFieldsValue({'dueOnDate':moment(dueOndate)})
+        });
+    }
+
+    dueOnDateChange = (date, dateString) => {
+        this.setState({
+            dueOnDate:dateString
+        });
     }
 
     billingTermSelect = (value) => {
-        console.log(`selected ${value}`);
+        let dueOndate =  getTheDate(this.state.invDate,Number(value));
+        this.setState({
+            dueOnDate:dueOndate
+        });
+        this.props.form.setFieldsValue({'dueOnDate':moment(dueOndate)})
     }
 
     render() {
@@ -24,7 +48,7 @@ export default class InvoiceModal extends Component {
           title="Generate Invoice"
           okText="Generate"
           onCancel={onCancel}
-          onOk={onCreate}
+          onOk={onCreate.bind(this,this.state.invDate,this.state.dueOnDate)}
         >   
         <div className={styles.modalFormWrapper}>
             <Form layout="inline">
@@ -34,7 +58,7 @@ export default class InvoiceModal extends Component {
                             {getFieldDecorator('actInvNo', {
                                 rules: [{ required: true, message: 'Please input the actual invoice No!' }],
                             })(
-                                <Input/>
+                                <Input autoComplete="off"/>
                             )}
                         </FormItem>
                     </Col>
@@ -67,7 +91,7 @@ export default class InvoiceModal extends Component {
                             {getFieldDecorator('dueOnDate', {
                                 rules: [{ required: true, message: 'Please select the time!' }],
                             })(
-                                <DatePicker onChange={this.invoicedateChange}/>
+                                <DatePicker onChange={this.dueOnDateChange}/>
                             )}
                         </FormItem>
                     </Col>

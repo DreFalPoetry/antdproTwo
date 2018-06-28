@@ -6,7 +6,7 @@ import InvoiceModal from './GenerateInvoiceModal';
 import { connect } from 'dva';
 import moment from 'moment';
 import {deepCloneObj} from '../../utils/commonFunc';
-import {advStatementUpdates} from '../../services/api';
+import {advStatementUpdates,advStatementUpdatesByData} from '../../services/api';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -28,6 +28,8 @@ export default class AdvStatement extends Component {
             invoiceModalvisible:false,
             showGenerateInvoiveOption:false,
             showApproveOrRejectOption:false,
+            chooseIds:[],
+            chooseRecords:[],
             tableQuery:{
                 advAccountId:null,
                 employeeId:null,
@@ -91,9 +93,41 @@ export default class AdvStatement extends Component {
 
     //批量选择操作 1--Approved 2--Rejected 3--Invoiced
     selectOption = (value) => {
-        console.log(`selected ${value}`);
+        let ids = [];
+        let records = deepCloneObj(this.state.selectedRows);
+        records.forEach((item)=>{
+            return item.finApproStatus = value;
+        })
+        ids = records.map((item)=>{
+            return item.id
+        });
         if(value == 3){
-            this.setState({ invoiceModalvisible: true });
+            this.setState({ invoiceModalvisible: true,chooseIds:ids,chooseRecords:records });
+        }else{
+            let data = {};
+            data.ids = ids;
+            data.status = value;
+            const response = advStatementUpdatesByData(data);
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    const {dataList} = this.props.advStatement;
+                    let tempDataList = deepCloneObj(dataList);
+                    tempDataList.forEach(function(item,ind){
+                        records.map((record)=>{
+                            if(item.uniqueKey==record.uniqueKey){
+                                tempDataList.splice(ind,1,record);
+                            }
+                        })
+                    });
+                    this.props.dispatch({
+                        type:'advStatement/asyncDataList',
+                        payload: tempDataList,
+                    });
+                    message.success('save');
+                    this.cleanSelectedRows();
+                }
+            })
         }
     }
 
@@ -175,15 +209,50 @@ export default class AdvStatement extends Component {
         this.setState({ invoiceModalvisible: false });
     }
 
-    createInvoice = () => {
+    createInvoice = (invDate,dueOnDate) => {
         const form = this.formRef.props.form;
         form.validateFields((err, values) => {
-          if (err) {
-            return;
-          }
-          console.log('Received values of form: ', values);
-          form.resetFields();
-          this.setState({ invoiceModalvisible: false });
+            if (err) {
+                return;
+            }
+            let data = {};
+            data.ids = this.state.chooseIds;
+            data.status = '3';
+            data.invoiceInfo = {
+                actInvNo:values.actInvNo,
+                billingTerm:values.billingTerm?values.billingTerm:'30',
+                payTo:values.payTo?values.payTo:'23232',
+                invDate:invDate,
+                dueOnDate:dueOnDate
+            }
+            const response = advStatementUpdatesByData(data);
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    const {dataList} = this.props.advStatement;
+                    let tempDataList = deepCloneObj(dataList);
+                    let records = deepCloneObj(this.state.chooseRecords);
+                    tempDataList.forEach(function(item,ind){
+                        records.map((record)=>{
+                            if(item.uniqueKey==record.uniqueKey){
+                                tempDataList.splice(ind,1,record);
+                            }
+                        })
+                    });
+                    this.props.dispatch({
+                        type:'advStatement/asyncDataList',
+                        payload: tempDataList,
+                    });
+                    message.success('save');
+                    this.cleanSelectedRows();
+                    this.setState({
+                        chooseIds:[],
+                        chooseRecords:[],
+                        invoiceModalvisible: false 
+                    });
+                    form.resetFields();
+                }
+            })
         });
     }
 

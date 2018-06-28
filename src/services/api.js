@@ -101,6 +101,13 @@ export async function advStatementUpdates(id,params) {
     });
 }
 
+export async function advStatementUpdatesByData(params) {
+    return request('/api/advStatement', {
+        method: 'PUT',
+        body: params,
+    });
+}
+
 export async function queryAdvInvRecord(params) {
     return request(`/api/advInvRecord?${stringify(params)}`);
 }
