@@ -485,6 +485,28 @@ export default class AdvStatement extends Component {
         });
     }
 
+    moveToNext = (month,record) => {
+        const response = advStatementUpdates('1001',{month:month});
+        response.then(res => {return res;})
+        .then(json => {
+            if(json.code == 0){
+                record.month = month;
+                const {dataList} = this.props.advStatement;
+                let tempDataList = deepCloneObj(dataList);
+                tempDataList.forEach(function(item,ind){
+                    if(item.uniqueKey==record.uniqueKey){
+                        tempDataList.splice(ind,1,record);
+                    }
+                });
+                this.props.dispatch({
+                    type:'advStatement/asyncDataList',
+                    payload: tempDataList,
+                })
+                message.success('save');
+            }
+        });
+    }
+
     render() {
         const {selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
         const {employeeList,advAccountList} = this.props.advReport;
@@ -592,6 +614,16 @@ export default class AdvStatement extends Component {
         },{
             title: 'Move to',
             dataIndex: 'month',
+            render:(text,record,index) => {
+                let year = new Date().getFullYear();
+                let month = new Date().getMonth()+1 <10?'0'+(new Date().getMonth()+1) :new Date().getMonth()+1;
+                let nextMonth = new Date().getMonth()+2 <10?'0'+(new Date().getMonth()+2) :new Date().getMonth()+2;
+                if(text.split('-')[1] == month){
+                    return <a title={text} onClick={this.moveToNext.bind(this,`${year}-${nextMonth}`,record)}>moveToNext</a>
+                }else{
+                    return <a title={text} onClick={this.moveToNext.bind(this,`${year}-${month}`,record)}>backForward</a>
+                }
+            }
         }];
         return (
             <div>
