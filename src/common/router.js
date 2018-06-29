@@ -72,6 +72,21 @@ export const getRouterData = app => {
     '/': {
       component: dynamicWrapper(app, ['user', 'login'], () => import('../layouts/BasicLayout')),
     },
+    '/advertiser/advReport': {
+        component: dynamicWrapper(app, ['advReport'], () => import('../routes/Advertiser/Report')),
+    },
+    '/advertiser/advStatement': {
+        component: dynamicWrapper(app, ['advReport','advStatement'], () => import('../routes/Advertiser/Statement')),
+    },
+    '/advertiser/advInvRec': {
+        component: dynamicWrapper(app, ['advReport','advInvRecord'], () => import('../routes/Advertiser/InvoiceRecord')),
+    },
+    '/advertiser/advPaymentColle': {
+        component: dynamicWrapper(app, ['advReport','advPaymentColle'], () => import('../routes/Advertiser/PaymentCollection')),
+    },
+    '/advertiser/advCredit': {
+        component: dynamicWrapper(app, ['advReport','advCredit'], () => import('../routes/Advertiser/Credit')),
+    },
     '/dashboard/analysis': {
       component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
     },
@@ -168,21 +183,7 @@ export const getRouterData = app => {
     '/user/register-result': {
       component: dynamicWrapper(app, [], () => import('../routes/User/RegisterResult')),
     },
-    '/advertiser/advReport': {
-        component: dynamicWrapper(app, ['advReport'], () => import('../routes/Advertiser/Report')),
-    },
-    '/advertiser/advStatement': {
-        component: dynamicWrapper(app, ['advReport','advStatement'], () => import('../routes/Advertiser/Statement')),
-    },
-    '/advertiser/advInvRec': {
-        component: dynamicWrapper(app, ['advReport','advInvRecord'], () => import('../routes/Advertiser/InvoiceRecord')),
-    },
-    '/advertiser/advPaymentColle': {
-        component: dynamicWrapper(app, ['advReport','advPaymentColle'], () => import('../routes/Advertiser/PaymentCollection')),
-    },
-    '/advertiser/advCredit': {
-        component: dynamicWrapper(app, ['advReport','advCredit'], () => import('../routes/Advertiser/Credit')),
-    },
+    
     // '/user/:id': {
     //   component: dynamicWrapper(app, [], () => import('../routes/User/SomeComponent')),
     // },
