@@ -59,7 +59,7 @@ const menuData = [
         },
         {
             name: '高级表单',
-            authority: 'pm,admin',
+            authority: 'am,pm',
             path: 'advanced-form',
         },
         ],
@@ -113,7 +113,7 @@ const menuData = [
         {
             name: '高级详情页',
             path: 'advanced',
-            authority: 'am,pm',
+            authority: 'pm',
         },
         ],
     },

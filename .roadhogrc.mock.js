@@ -77,7 +77,7 @@ const proxy = {
         res.send({
             status: 'ok',
             type,
-            currentAuthority: 'admin',
+            currentAuthority: 'admin,am',
         });
         return;
         }
