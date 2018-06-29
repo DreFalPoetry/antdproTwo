@@ -553,7 +553,8 @@ export default class AdvStatement extends Component {
                 return {disabled:(record.finApproStatus == '3' || record.finApproStatus == '2')}
             }
         };
-        const userRole = localStorage.getItem('antd-pro-authority');
+        const userRoles = localStorage.getItem('antd-pro-authority');
+        const userRole = userRoles.split(',');
         const columns = [{
             title: 'Campaign',
             dataIndex: 'id',
@@ -565,7 +566,7 @@ export default class AdvStatement extends Component {
             dataIndex: 'invoiceAmount',
             render:(text,record,index) => {
                 if(!text){
-                    if(userRole == 'admin'){
+                    if(userRole.indexOf('admin') > -1){
                         return  <div>
                                     <Input value={this.state.invoiceAmount[index]} 
                                         onChange={this.inputInvoiceAmount.bind(this,index)}
@@ -595,7 +596,7 @@ export default class AdvStatement extends Component {
             dataIndex: 'currency',
             render:(text,record,index) => {
                 if(!text){
-                    if(userRole == 'admin'){
+                    if(userRole.indexOf('admin') > -1){
                         return (
                             <div>
                                 <Select size="small" defaultValue="USD" style={{ width: 80,marginRight:5 }} onChange={this.selectCellCurrency.bind(this,index)}>
@@ -623,7 +624,7 @@ export default class AdvStatement extends Component {
             dataIndex: 'finApproStatus',
             render:(text,record,index) => {
                 if(text == '0'){
-                    if(userRole == 'admin'){
+                    if(userRole.indexOf('admin') > -1){
                         return(
                             <div>
                                 <Select size="small" defaultValue="1" style={{ width: 100,marginRight:5 }} onChange={this.selectCellApprove.bind(this,index)}>
