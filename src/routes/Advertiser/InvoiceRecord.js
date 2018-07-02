@@ -396,12 +396,10 @@ export default class AdvInvRecord extends Component {
                             <Col sm={{span:12}} xs={{span:24}}> 
                                 <FormItem label="Invoice No">
                                     {getFieldDecorator('invoiceNo')(
-                                        <Input placeholder="Search by invoice No." />
+                                        <Input placeholder="Search by invoice No."  autoComplete="off"/>
                                     )}
                                 </FormItem>
                             </Col>
-                        </Row>
-                        <Row>
                             <div className={styles.searchBtnWrapper}>
                                 <Button type="primary" htmlType="submit">QUERY</Button>
                                 <Button style={{marginLeft:'10px'}}  onClick={this.clearQuery}>RESET</Button>
