@@ -1,6 +1,6 @@
 import React, { Component ,Fragment} from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge,Popconfirm, message } from 'antd';
+import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge,Popconfirm, message ,Icon} from 'antd';
 import commonStyle from './Report.less';
 import InvoiceModal from './GenerateInvoiceModal';
 import { connect } from 'dva';
@@ -30,6 +30,9 @@ export default class AdvStatement extends Component {
             showApproveOrRejectOption:false,
             chooseIds:[],
             chooseRecords:[],
+            invAmountEditable:[],
+            currencyEditable:[],
+            financeApproveEditable:[],
             tableQuery:{
                 advAccountId:null,
                 employeeId:null,
@@ -430,6 +433,11 @@ export default class AdvStatement extends Component {
                         payload: tempDataList,
                     })
                     message.success('save');
+                    let tempEdit  = deepCloneObj(this.state.invAmountEditable);
+                    tempEdit[index] = false;
+                    this.setState({
+                        invAmountEditable:tempEdit
+                    })
                 }
             });
         }
@@ -448,7 +456,11 @@ export default class AdvStatement extends Component {
     sureCellCurrency = (index,record) => {
         let itemCurrency;
         if(!this.state.cellCurrency[index]){
-            itemCurrency = 'USD'
+            if(!record.currency){
+                itemCurrency = 'USD'
+            }else{
+                itemCurrency = record.currency;
+            }
         }else{
             itemCurrency = this.state.cellCurrency[index];
         }
@@ -469,6 +481,11 @@ export default class AdvStatement extends Component {
                         payload: tempDataList,
                     })
                     message.success('save');
+                    let tempEdit = deepCloneObj(this.state.currencyEditable);
+                    tempEdit[index] = false;
+                    this.setState({
+                        currencyEditable:tempEdit
+                    })
                 }
             });
 
@@ -485,7 +502,11 @@ export default class AdvStatement extends Component {
     sureCellApprove = (index,record) => {
         let itemApprove;
         if(!this.state.cellApprove[index]){
-            itemApprove = '1'
+            if(!record.finApproStatus){
+                itemApprove = '1'
+            }else{
+                itemApprove = record.finApproStatus
+            }
         }else{
             itemApprove = this.state.cellApprove[index];
         }
@@ -516,6 +537,11 @@ export default class AdvStatement extends Component {
                     payload: headerInfoTemp,
                 });
                 message.success('save');
+                let tempEdit = deepCloneObj(this.state.financeApproveEditable);
+                tempEdit[index] = false;
+                this.setState({
+                    financeApproveEditable:tempEdit
+                })
             }
         });
     }
@@ -542,8 +568,32 @@ export default class AdvStatement extends Component {
         });
     }
 
+    editInvoiceAmount = (index) => {
+        let tempEdit = deepCloneObj(this.state.invAmountEditable);
+        tempEdit[index] = true;
+        this.setState({
+            invAmountEditable:tempEdit
+        })
+    }
+
+    editCurrency = (index) => {
+        let tempEdit = deepCloneObj(this.state.currencyEditable);
+        tempEdit[index] = true;
+        this.setState({
+            currencyEditable:tempEdit
+        })
+    }
+
+    editFinApproStatus = (index) => {
+        let tempEdit = deepCloneObj(this.state.financeApproveEditable);
+        tempEdit[index] = true;
+        this.setState({
+            financeApproveEditable:tempEdit
+        })
+    }
+
     render() {
-        const {selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
+        const {selectedRowKeys,selectedRows,totalInvoiceAmount,invAmountEditable,currencyEditable,financeApproveEditable } = this.state;
         const {employeeList,advAccountList} = this.props.advReport;
         const {dataList,total,pageSize,pageCurrent,headerInfo} = this.props.advStatement;
         const { getFieldDecorator } = this.props.form;
@@ -567,52 +617,64 @@ export default class AdvStatement extends Component {
             title: 'Invoice Amount',
             dataIndex: 'invoiceAmount',
             render:(text,record,index) => {
-                if(!text){
-                    if(userRole.indexOf('admin') > -1){
-                        return  <div>
-                                    <Input value={this.state.invoiceAmount[index]} 
-                                        onChange={this.inputInvoiceAmount.bind(this,index)}
-                                        size="small"
-                                        style={{width:80,marginRight:5}}
-                                    />
-                                    <Popconfirm 
-                                        title="Are you sure?" 
-                                        onConfirm={this.confirmInvoiceAmount.bind(this,index,record)} 
-                                        okText="Yes" cancelText="No">
-                                        <Button 
-                                            type='primary' size="small" >
-                                            Sure
-                                        </Button>
-                                    </Popconfirm>
-                                </div> 
-                    }else{
-                        return ''
-                    }
+                if(userRole.indexOf('admin') > -1){
+                    return ( !invAmountEditable[index]?(
+                            <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editInvoiceAmount.bind(this,index)}
+                            />
+                            </div>
+                        ):(
+                            <div>
+                                <Input value={this.state.invoiceAmount[index]||text} 
+                                    onChange={this.inputInvoiceAmount.bind(this,index)}
+                                    size="small"
+                                    style={{width:80,marginRight:5}}
+                                />
+                                <Popconfirm 
+                                    title="Are you sure?" 
+                                    onConfirm={this.confirmInvoiceAmount.bind(this,index,record)} 
+                                    okText="Yes" cancelText="No">
+                                    <Button 
+                                        type='primary' size="small" >
+                                        Sure
+                                    </Button>
+                                </Popconfirm>
+                            </div> 
+                        )
+                    )
                 }else{
-                    return text;
+                    return  text || ' '
                 }
-                
             }
         },{
             title: 'Currency',
             dataIndex: 'currency',
             render:(text,record,index) => {
-                if(!text){
-                    if(userRole.indexOf('admin') > -1){
-                        return (
-                            <div>
-                                <Select size="small" defaultValue="USD" style={{ width: 80,marginRight:5 }} onChange={this.selectCellCurrency.bind(this,index)}>
-                                    <Option value="USD">USD</Option>
-                                    <Option value="INR">INR</Option>
-                                </Select>
-                                <Button type='primary' size='small' onClick={this.sureCellCurrency.bind(this,index,record)}>Sure</Button>
-                            </div>
-                        )
-                    }else{
-                        return '';
-                    }
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !currencyEditable[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCurrency.bind(this,index)}
+                            />
+                        </div>:
+                        <div>
+                            <Select size="small" value={this.state.cellCurrency[index]||text||'USD'} style={{ width: 80,marginRight:5 }} onChange={this.selectCellCurrency.bind(this,index)}>
+                                <Option value="USD">USD</Option>
+                                <Option value="INR">INR</Option>
+                            </Select>
+                            <Button type='primary' size='small' onClick={this.sureCellCurrency.bind(this,index,record)}>Sure</Button>
+                        </div>
+                    )
                 }else{
-                    return text;
+                    return  text || '';
                 }
             }
         },{
@@ -628,8 +690,18 @@ export default class AdvStatement extends Component {
                 if(text == '0'){
                     if(userRole.indexOf('admin') > -1){
                         return(
+                            !financeApproveEditable[index]?
+                            <div className={commonStyle.editableCellIconWrapper}>
+                                <span><Badge status="processing"/>Pending-Audit</span>
+                                <Icon
+                                    style={{lineHeight:'20px'}}
+                                    type="edit"
+                                    className={commonStyle.editableCellIcon}
+                                    onClick={this.editFinApproStatus.bind(this,index)}
+                                />
+                            </div>:
                             <div>
-                                <Select size="small" defaultValue="1" style={{ width: 100,marginRight:5 }} onChange={this.selectCellApprove.bind(this,index)}>
+                                <Select size="small" value={this.state.cellApprove[index]||text||'1'} style={{ width: 100,marginRight:5 }} onChange={this.selectCellApprove.bind(this,index)}>
                                     <Option value="1">Approve</Option>
                                     <Option value="2">Reject</Option>
                                 </Select>
@@ -642,7 +714,29 @@ export default class AdvStatement extends Component {
                 }else if(text == '1'){
                     return <div><Badge status="success"/>Approved</div>
                 }else if(text == '2'){
-                    return <div><Badge status="error"/>Rejected</div>
+                    if(userRole.indexOf('admin') > -1){
+                        return(
+                            !financeApproveEditable[index]?
+                            <div className={commonStyle.editableCellIconWrapper}>
+                                {<span><Badge status="error"/>Rejected</span> || ' '}
+                                <Icon
+                                    style={{lineHeight:'20px'}}
+                                    type="edit"
+                                    className={commonStyle.editableCellIcon}
+                                    onClick={this.editFinApproStatus.bind(this,index)}
+                                />
+                            </div>:
+                            <div>
+                                <Select size="small" value={this.state.cellApprove[index]||String(text)||'1'} style={{ width: 100,marginRight:5 }} onChange={this.selectCellApprove.bind(this,index)}>
+                                    <Option value="1">Approve</Option>
+                                    <Option value="2">Reject</Option>
+                                </Select>
+                                <Button type='primary' size='small' onClick={this.sureCellApprove.bind(this,index,record)}>Sure</Button>
+                            </div>
+                        ) 
+                    }else{
+                        return <div><Badge status="error"/>Rejected</div>
+                    }
                 }else{
                     return <div><Badge status="default"/>Invoiced</div>
                 }
