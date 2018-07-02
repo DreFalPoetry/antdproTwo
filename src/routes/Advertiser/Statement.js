@@ -34,7 +34,8 @@ export default class AdvStatement extends Component {
                 advAccountId:null,
                 employeeId:null,
                 month:'',
-                keyWords:''
+                keyWords:'',
+                finApproStatus:null
             },
             advAccountValue:'',
             employeeValue:'',
@@ -68,7 +69,7 @@ export default class AdvStatement extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords});
+                let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords,finApproStatus:values.finApproStatus});
                 this.setState({
                     tableQuery: data,
                     pageCurrent:1
@@ -378,7 +379,8 @@ export default class AdvStatement extends Component {
                 advAccountId:null,
                 employeeId:null,
                 month:'',
-                keyWords:''
+                keyWords:'',
+                finApproStatus:null
             },
             advAccountValue:'',
             employeeValue:'',
@@ -717,8 +719,18 @@ export default class AdvStatement extends Component {
                                     />
                                 </FormItem>
                             </Col>
-                        </Row>
-                        <Row>
+                            <Col sm={{span:12}} xs={{span:24}}>
+                                <FormItem label="Approve Status">
+                                {getFieldDecorator('finApproStatus')(
+                                    <Select style={{ width: 230 }} placeholder="Choose Status" allowClear>
+                                        <Option value="0">Pending-Audit</Option>
+                                        <Option value="1">Approved</Option>
+                                        <Option value="2">Rejected</Option>
+                                        <Option value="3">Invoiced</Option>
+                                    </Select>
+                                )}
+                                </FormItem>
+                            </Col>
                             <div className={commonStyle.searchBtnWrapper}>
                                 <Button type="primary" htmlType="submit">QUERY</Button>
                                 <Button style={{marginLeft:'10px'}}  onClick={this.clearQuery}>RESET</Button>
@@ -739,7 +751,7 @@ export default class AdvStatement extends Component {
                                     <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
                                         <Option value="1">Approve</Option>
                                         <Option value="2">Reject</Option>
-                                        </Select>
+                                    </Select>
                                 ):null
                             }
                             </FormItem>
