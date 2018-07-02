@@ -14,7 +14,7 @@ const Option = Select.Option;
     advReport,
     loading: loading.effects['advReport/fetch'],  
 }))
-export default class AdvReoprt extends Component {
+export default class AdvReport extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -151,7 +151,7 @@ export default class AdvReoprt extends Component {
             this.props.dispatch({
                 type: 'advReport/fetch',
                 payload:{
-                    ...tableQuery,
+                    ...this.state.tableQuery,
                     pageCurrent:this.state.pageCurrent,
                     pageSize:this.state.pageSize
                 }
