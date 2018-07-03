@@ -152,7 +152,9 @@ export default class AdvStatement extends Component {
         let totalInvoiceAmount = [];
         let rowStatus = [];
         selectedRows.map((item) => {
-            rowStatus.push({status:item.finApproStatus,currency:item.currency});
+            if(item.currency && item.invoiceAmount){
+                rowStatus.push({status:item.finApproStatus,currency:item.currency});
+            }
             if(item.currency == "USD"){  
                 totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
             }else if(item.currency == "INR"){   
