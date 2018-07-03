@@ -1,6 +1,6 @@
 import React, { Component ,Fragment} from 'react';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge,Popconfirm, message ,Icon} from 'antd';
+import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge,Popconfirm, message ,Icon,Tabs } from 'antd';
 import commonStyle from './Report.less';
 import InvoiceModal from './GenerateInvoiceModal';
 import { connect } from 'dva';
@@ -11,6 +11,7 @@ const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
+const TabPane = Tabs.TabPane;
 
 @Form.create()
 @connect(({ advReport,advStatement,loading }) => ({
@@ -837,73 +838,82 @@ export default class AdvStatement extends Component {
                                 <Button style={{marginLeft:'10px'}}  onClick={this.clearQuery}>RESET</Button>
                             </div>
                         </Row>
-                        <Row>
-                            <Col sm={{span:12}} xs={{span:24}}>
-                            <FormItem label="Batch Actions">
-                            {
-                                this.state.showGenerateInvoiveOption?(
-                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
-                                        <Option value="3">Generate Invoice</Option>
-                                    </Select>
-                                ):null
-                            }
-                            {
-                                this.state.showApproveOrRejectOption?(
-                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
-                                        <Option value="1">Approve</Option>
-                                        <Option value="2">Reject</Option>
-                                    </Select>
-                                ):null
-                            }
-                            </FormItem>
-                            </Col>
-                        </Row>
                     </Form>
                     </div>
-                    <Alert
-                        style={{marginBottom:"5px"}}
-                        message={
-                        <Fragment>
-                             Selected <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> Campaigns&nbsp;&nbsp; Total Invoice Amount:&nbsp;
-                            {totalInvoiceAmount.map((item,index)=> (
-                            <span style={{ marginLeft: 8 }} key={index}>
-                                <span style={{ fontWeight: 600 }}>
-                                    {item.total? item.total + " " +item.type:null}
-                                </span>
-                            </span>
-                            ))}
-                            {
-                                totalInvoiceAmount.length?
-                                <a onClick={this.cleanSelectedRows} style={{ marginLeft: 24 }}>
-                                Clear Select
-                                </a>:''
-                            }
-                        </Fragment>
-                        }
-                        type="info"
-                        showIcon
-                    />
-                    <Table 
-                        rowSelection={rowSelection}
-                        columns={columns} 
-                        dataSource={dataList} 
-                        loading={loading}
-                        pagination={{
-                            defaultCurrent:1,
-                            total:Number(total),
-                            showSizeChanger:true,
-                            pageSize:Number(pageSize),
-                            pageSizeOptions:['10','20','30','50','100'],
-                            onShowSizeChange:this.pageSizeChange,
-                            current:Number(pageCurrent), 
-                            onChange:this.pageChange
-                        }}
-                        rowKey="uniqueKey"
-                        bordered
-                        footer={() => (
-                            <div>{headerInfo.total} campaigns，已开票{headerInfo.invoiced}个，Rejected{headerInfo.rejected}个，Approved未开票{headerInfo.approved}个</div>
-                        )}
-                    />
+                    <Tabs defaultActiveKey="1">
+                        <TabPane tab="Tab 1" key="1">
+                            tab1内容
+                        </TabPane>
+                        <TabPane tab="Tab 2" key="2">
+                            <Row>
+                                <Col sm={{span:12}} xs={{span:24}}>
+                                    <Form layout="inline" style={{marginBottom:'10px'}}>
+                                        <FormItem label="Batch Actions">
+                                        {
+                                            this.state.showGenerateInvoiveOption?(
+                                                <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
+                                                    <Option value="3">Generate Invoice</Option>
+                                                </Select>
+                                            ):null
+                                        }
+                                        {
+                                            this.state.showApproveOrRejectOption?(
+                                                <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
+                                                    <Option value="1">Approve</Option>
+                                                    <Option value="2">Reject</Option>
+                                                </Select>
+                                            ):null
+                                        }
+                                        </FormItem>
+                                    </Form>
+                                </Col>
+                            </Row>
+                            <Alert
+                                style={{marginBottom:"5px"}}
+                                message={
+                                <Fragment>
+                                    Selected <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> Campaigns&nbsp;&nbsp; Total Invoice Amount:&nbsp;
+                                    {totalInvoiceAmount.map((item,index)=> (
+                                    <span style={{ marginLeft: 8 }} key={index}>
+                                        <span style={{ fontWeight: 600 }}>
+                                            {item.total? item.total + " " +item.type:null}
+                                        </span>
+                                    </span>
+                                    ))}
+                                    {
+                                        totalInvoiceAmount.length?
+                                        <a onClick={this.cleanSelectedRows} style={{ marginLeft: 24 }}>
+                                        Clear Select
+                                        </a>:''
+                                    }
+                                </Fragment>
+                                }
+                                type="info"
+                                showIcon
+                            />
+                            <Table 
+                                rowSelection={rowSelection}
+                                columns={columns} 
+                                dataSource={dataList} 
+                                loading={loading}
+                                pagination={{
+                                    defaultCurrent:1,
+                                    total:Number(total),
+                                    showSizeChanger:true,
+                                    pageSize:Number(pageSize),
+                                    pageSizeOptions:['10','20','30','50','100'],
+                                    onShowSizeChange:this.pageSizeChange,
+                                    current:Number(pageCurrent), 
+                                    onChange:this.pageChange
+                                }}
+                                rowKey="uniqueKey"
+                                bordered
+                                footer={() => (
+                                    <div>{headerInfo.total} campaigns，已开票{headerInfo.invoiced}个，Rejected{headerInfo.rejected}个，Approved未开票{headerInfo.approved}个</div>
+                                )}
+                            /> 
+                        </TabPane>
+                    </Tabs>
                     </Card>
                 </PageHeaderLayout>
                 <InvoiceModal
