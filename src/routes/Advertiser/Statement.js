@@ -152,7 +152,7 @@ export default class AdvStatement extends Component {
         let totalInvoiceAmount = [];
         let rowStatus = [];
         selectedRows.map((item) => {
-            rowStatus.push(item.finApproStatus);
+            rowStatus.push({status:item.finApproStatus,currency:item.currency});
             if(item.currency == "USD"){  
                 totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
             }else if(item.currency == "INR"){   
@@ -180,15 +180,20 @@ export default class AdvStatement extends Component {
         if(rowStatus.length){
             let gerInv = true;
             let apprOrRej = true;
-            rowStatus.map((item)=>{
-                if(item != '1'){
+            let theSameCurrency = true;
+            rowStatus.map((item,index,arr)=>{
+                if(item.status != '1'){
                     gerInv = false;
                 }
-                if(item != '0'){
+                if(item.status != '0'){
                     apprOrRej = false;
                 }
+                let firstCurrency = arr[0].currency;
+                if(item.currency != firstCurrency){
+                    theSameCurrency = false;
+                }
             })
-            if(gerInv){
+            if(gerInv && theSameCurrency){
                 this.setState({
                     showGenerateInvoiveOption:true,
                     showApproveOrRejectOption:false
@@ -751,7 +756,7 @@ export default class AdvStatement extends Component {
                 if(text.split('-')[1] == month){
                     return <a title={text} onClick={this.moveToNext.bind(this,`${year}-${nextMonth}`,record)}>moveToNext</a>
                 }else{
-                    return <a title={text} onClick={this.moveToNext.bind(this,`${year}-${month}`,record)}>backForward</a>
+                    return <a title={text} onClick={this.moveToNext.bind(this,`${year}-${month}`,record)}>Revert to {text}</a>
                 }
             }
         }];
