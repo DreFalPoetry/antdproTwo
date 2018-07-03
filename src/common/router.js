@@ -87,6 +87,15 @@ export const getRouterData = app => {
     '/advertiser/advCredit': {
         component: dynamicWrapper(app, ['advReport','advCredit'], () => import('../routes/Advertiser/Credit')),
     },
+    '/publisher/pubReport': {
+        component: dynamicWrapper(app, ['advReport'], () => import('../routes/Publisher/Report')),
+    },
+    '/publisher/pubStatement': {
+        component: dynamicWrapper(app, ['advReport','advStatement'], () => import('../routes/Publisher/Statement')),
+    },
+    '/publisher/pubInvRec': {
+        component: dynamicWrapper(app, ['advReport','advInvRecord'], () => import('../routes/Publisher/InoviceRecord')),
+    },
     '/dashboard/analysis': {
       component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
     },

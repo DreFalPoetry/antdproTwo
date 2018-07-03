@@ -24,6 +24,22 @@ const menuData = [
         ]
     },
     {
+        name:'Publisher',
+        path:'publisher',
+        children:[
+            {
+                name:'Publisher Report',
+                path:'pubReport'
+            },{
+                name:'Publisher Statement',
+                path:'pubStatement'
+            },{
+                name:'Publisher Invoice Record',
+                path:'pubInvRec'
+            }
+        ]
+    },
+    {
         name: 'dashboard',
         icon: 'dashboard',
         path: 'dashboard',
