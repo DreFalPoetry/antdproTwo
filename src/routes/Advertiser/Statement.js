@@ -609,7 +609,6 @@ export default class AdvStatement extends Component {
 
         // 添加子表格
         const expandedRow = (record) => {
-            console.log(record);
             const childColumns = [{
                 title:'name',
                 dataIndex:'name'
