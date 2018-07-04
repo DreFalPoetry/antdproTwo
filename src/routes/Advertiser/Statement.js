@@ -606,6 +606,31 @@ export default class AdvStatement extends Component {
         const {dataList,total,pageSize,pageCurrent,headerInfo} = this.props.advStatement;
         const { getFieldDecorator } = this.props.form;
         const {loading} = this.props;
+
+        // 添加子表格
+        const expandedRow = (record) => {
+            console.log(record);
+            const childColumns = [{
+                title:'name',
+                dataIndex:'name'
+            },{
+                title:'finApproStatus',
+                dataIndex:'finApproStatus'
+            },{
+                title:'month',
+                dataIndex:'month'
+            }];
+            return (
+                <div>
+                    {"name"+record.childData[0].name}
+                    {/* <Table
+                    columns={childColumns} 
+                    dataSource={record.childData}
+                    pagination={false}
+                    /> */}
+                </div>
+            )
+        }
         const rowSelection = {
             selectedRowKeys:selectedRowKeys,
             onChange:this.selectTableRow,
@@ -896,6 +921,7 @@ export default class AdvStatement extends Component {
                                 columns={columns} 
                                 dataSource={dataList} 
                                 loading={loading}
+                                expandedRowRender={expandedRow}
                                 pagination={{
                                     defaultCurrent:1,
                                     total:Number(total),

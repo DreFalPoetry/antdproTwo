@@ -188,6 +188,12 @@ const proxy = {
             'deductedAmt':'USD',
             'finApproStatus|0-3': 0, 
             month:'@date',
+            'childData':[{
+                'id|+1':1001, 
+                name: '@name',
+                'finApproStatus|0-3': 0, 
+                month:'@date',
+            }]
         }],
         "headerInfo":{
             "total":32,
