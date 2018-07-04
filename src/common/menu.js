@@ -14,10 +14,12 @@ const menuData = [
             },{
                 name:'Advertiser Invoice Record',
                 path:'advInvRec'
-            },{
-                name:'Payment Collection From Advertiser',
-                path:'advPaymentColle'
-            },{
+            },
+            // {
+            //     name:'Payment Collection From Advertiser',
+            //     path:'advPaymentColle'
+            // },
+            {
                 name:'Advertiser Credit',
                 path:'advCredit'
             }
