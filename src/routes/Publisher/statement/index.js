@@ -11,7 +11,7 @@ const TabPane = Tabs.TabPane;
     advReport,
     pubStatement,
     advStatement,
-    loading: loading.effects['advStatement/fetch'],  
+    loading: loading.effects['pubStatement/fetch'],  
 }))
 export default class PubStatement extends Component {
     constructor(props) {
@@ -19,7 +19,15 @@ export default class PubStatement extends Component {
         this.state = {};
     }
 
+    componentDidMount() {
+        this.props.dispatch({
+            type:'pubStatement/fetch',
+            payload:{}
+        });
+    }
+
     render() {
+        const {loading} = this.props;
         return (
             <div>
                 <PageHeaderLayout>
@@ -27,7 +35,7 @@ export default class PubStatement extends Component {
                         <SearchForm/>
                         <Tabs defaultActiveKey="1">
                             <TabPane tab="Tab 1" key="1">
-                                <SummaryTable/>
+                                <SummaryTable loading={loading}/>
                             </TabPane>
                             <TabPane tab="Tab 2" key="2">
                                 2

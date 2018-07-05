@@ -4,8 +4,7 @@ import {Table } from 'antd';
 @connect(({ advReport,pubStatement,advStatement,loading }) => ({
     advReport,
     pubStatement,
-    advStatement,
-    loading: loading.effects['advStatement/fetch'],  
+    advStatement
 }))
 
 /**
@@ -57,7 +56,7 @@ export default class SummaryTable extends Component{
    
     render(){
         const {summaryDataList} = this.props.pubStatement;
-        const {loading} = this.props;
+        const loading = this.props.loading;
         return (
             <Table 
                 columns={this.sumColumns} 

@@ -33,7 +33,7 @@ export default class SearchForm extends Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                let data = Object.assign({}, this.state.tableQuery, {keyWords:values.keyWords,finApproStatus:values.finApproStatus});
+                let data = Object.assign({}, this.state.tableQuery, {status:values.status});
                 this.setState({
                     tableQuery: data,
                     pageCurrent:1
@@ -229,7 +229,7 @@ export default class SearchForm extends Component {
                     </Col>
                     <Col sm={{span:12}} xs={{span:24}}>
                         <FormItem label="Status">
-                        {getFieldDecorator('finApproStatus')(
+                        {getFieldDecorator('status')(
                             <Select 
                                 style={{ width: 230 }} 
                                 placeholder="Choose Status"
