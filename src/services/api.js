@@ -132,3 +132,8 @@ export async function queryAdvPaymentColle(params) {
 export async function queryAdvCredit(params) {
     return request(`/api/advCredit?${stringify(params)}`);
 }
+
+//添加pub statement 的 Summary 接口
+export async function queryPubStatementSummary(params) {
+    return request(`/api/pubStatementSummary?${stringify(params)}`);
+}

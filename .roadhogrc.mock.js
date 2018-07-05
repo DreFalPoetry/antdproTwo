@@ -281,6 +281,26 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    //添加pub statement 的 Summary 接口
+    'GET /api/pubStatementSummary':mockjs.mock({
+        'code':0,
+        'data|50': [{ 
+            'id|+1':6001, 
+            affiliateName: '@name',
+            'sysAmount|100-10000':1333,
+            'deductedAmount|1000-9999':1232,
+            'adjustAmount|100-999':123,
+            'campaigns|0-100':10,
+            'initial|0-10':1,
+            'pending|0-10':1,
+            'rejected|0-10':1,
+            'approved|0-10':1,
+            'packaged|0-10':1,
+        }],
+        'total':50,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));

@@ -14,8 +14,9 @@ const Option = Select.Option;
 const TabPane = Tabs.TabPane;
 
 @Form.create()
-@connect(({ advReport,advStatement,loading }) => ({
+@connect(({ advReport,pubStatement,advStatement,loading }) => ({
     advReport,
+    pubStatement,
     advStatement,
     loading: loading.effects['advStatement/fetch'],  
 }))
@@ -46,10 +47,44 @@ export default class PubStatement extends Component {
             employeeRole:"1",
             pageCurrent:1,
             pageSize:20,
+            sumPageCurrent:1,
+            sumPageSize:20,
             invoiceAmount:[],
             cellCurrency:[],
             cellApprove:[]
         };
+        //summary column
+        this.sumColumns = [{
+            title: 'Affiliate',
+            dataIndex: 'affiliateName',
+        },{
+            title: 'System Amount$',
+            dataIndex: 'sysAmount',
+        },{
+            title: 'Deducted Amount$',
+            dataIndex: 'deductedAmount',
+        },{
+            title: 'Adjust Amount$',
+            dataIndex: 'adjustAmount',
+        },{
+            title: 'Campaigns',
+            dataIndex: 'campaigns',
+        },{
+            title: 'Initial',
+            dataIndex: 'initial',
+        },{
+            title: 'Pending-Audit',
+            dataIndex: 'pending',
+        },{
+            title: 'Rejected',
+            dataIndex: 'rejected',
+        },{
+            title: 'Approved',
+            dataIndex: 'approved',
+        },{
+            title: 'Packaged',
+            dataIndex: 'packaged',
+        }]
     }
 
     componentDidMount() {
@@ -59,6 +94,14 @@ export default class PubStatement extends Component {
                 ...this.state.tableQuery,
                 pageCurrent:this.state.pageCurrent,
                 pageSize:this.state.pageSize
+            }
+        })
+        this.props.dispatch({
+            type: 'pubStatement/fetchSummary',
+            payload:{
+                ...this.state.tableQuery,
+                pageCurrent:this.state.sumPageCurrent,
+                pageSize:this.state.sumPageSize
             }
         })
     }
@@ -604,6 +647,7 @@ export default class PubStatement extends Component {
         const {selectedRowKeys,selectedRows,totalInvoiceAmount,invAmountEditable,currencyEditable,financeApproveEditable } = this.state;
         const {employeeList,advAccountList} = this.props.advReport;
         const {dataList,total,pageSize,pageCurrent,headerInfo} = this.props.advStatement;
+        const {summaryDataList} = this.props.pubStatement;
         const { getFieldDecorator } = this.props.form;
         const {loading} = this.props;
         const rowSelection = {
@@ -842,7 +886,23 @@ export default class PubStatement extends Component {
                     </div>
                     <Tabs defaultActiveKey="1">
                         <TabPane tab="Tab 1" key="1">
-                            tab1内容
+                            <Table 
+                                columns={this.sumColumns} 
+                                dataSource={summaryDataList} 
+                                loading={loading}
+                                // pagination={{
+                                //     defaultCurrent:1,
+                                //     total:Number(total),
+                                //     showSizeChanger:true,
+                                //     pageSize:Number(pageSize),
+                                //     pageSizeOptions:['10','20','30','50','100'],
+                                //     onShowSizeChange:this.pageSizeChange,
+                                //     current:Number(pageCurrent), 
+                                //     onChange:this.pageChange
+                                // }}
+                                rowKey="uniqueKey"
+                                bordered
+                            /> 
                         </TabPane>
                         <TabPane tab="Tab 2" key="2">
                             <Row>
