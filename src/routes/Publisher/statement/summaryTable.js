@@ -48,30 +48,44 @@ export default class SummaryTable extends Component{
         }]
     }
 
-    componentDidMount() {
+    pageSizeChange = (current, pageSize) => {
+        this.initalTableList(pageSize,1)
+    }
+
+    pageChange = (pageCurrent, pageSize) => {
+        this.initalTableList(pageSize,pageCurrent)
+    }
+
+    initalTableList = (pageSize,pageCurrent) => {
+        const {tableQuery} = this.props.pubStatement; 
         this.props.dispatch({
-            type: 'pubStatement/fetchSummary',
-        })
+            type: 'pubStatement/fetch',
+            payload:{
+               ...tableQuery,
+               pageSize:pageSize,
+               pageCurrent:pageCurrent
+            }
+        });
     }
    
     render(){
-        const {summaryDataList} = this.props.pubStatement;
+        const {summaryDataList,total1,pageSize1,pageCurrent1} = this.props.pubStatement;
         const loading = this.props.loading;
         return (
             <Table 
                 columns={this.sumColumns} 
                 dataSource={summaryDataList} 
                 loading={loading}
-                // pagination={{
-                //     defaultCurrent:1,
-                //     total:Number(total),
-                //     showSizeChanger:true,
-                //     pageSize:Number(pageSize),
-                //     pageSizeOptions:['10','20','30','50','100'],
-                //     onShowSizeChange:this.pageSizeChange,
-                //     current:Number(pageCurrent), 
-                //     onChange:this.pageChange
-                // }}
+                pagination={{
+                    defaultCurrent:1,
+                    total:Number(total1),
+                    showSizeChanger:true,
+                    pageSize:Number(pageSize1),
+                    pageSizeOptions:['10','20','30','50','100'],
+                    onShowSizeChange:this.pageSizeChange,
+                    current:Number(pageCurrent1), 
+                    onChange:this.pageChange
+                }}
                 rowKey="uniqueKey"
                 bordered
             /> 

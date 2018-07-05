@@ -10,6 +10,9 @@ export default {
         total:0,
         pageSize:20,
         pageCurrent:1,
+        total1:0,
+        pageSize1:20,
+        pageCurrent1:1,
         headerInfo:{
             total:null,
             invoiced:null,
@@ -17,7 +20,14 @@ export default {
             approved:null
         },
         affiliateList:[],
-        campaignList:[]
+        campaignList:[],
+        tableQuery:{
+            affiliateId:null,
+            campaignId:null,
+            employeeId:null,
+            month:'',
+            status:null
+        }
     },
 
     effects: {
@@ -48,6 +58,13 @@ export default {
                 summaryDataList.filter((item,index) => {
                     item.uniqueKey = index+1;
                 });
+                const total1 = response.total;
+                const pageSize1 = response.pageSize;
+                const pageCurrent1 = response.pageCurrent;
+				yield put({
+					type: 'syancTablePage',
+					payload: { total1, pageSize1, pageCurrent1},
+				});
                 yield put({
                     type: 'asyncSummaryDataList',
                     payload: summaryDataList,
@@ -125,6 +142,20 @@ export default {
                 campaignList:payload,
             };
         },
+        asyncQueryData(state, { payload }) {
+            return {
+                ...state,
+                tableQuery:payload,
+            };
+        },
+        syancTablePage(state, { payload: { total1, pageSize1,pageCurrent1 } }) {
+			return {
+				...state,
+				total1,
+                pageSize1,
+                pageCurrent1
+			};
+		},
         clear() {
             return {
                 dataList:[],

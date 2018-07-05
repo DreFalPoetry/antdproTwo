@@ -22,7 +22,6 @@ export default class SearchForm extends Component {
             month:'',
             status:null
         },
-        pageCurrent:1,
         affiliateValue:'',
         campaignValue:'',
         employeeRole:"1",
@@ -30,24 +29,33 @@ export default class SearchForm extends Component {
     }
 
     submitSearch = (e) => {
+        const { pageSize1} = this.props.pubStatement;
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 let data = Object.assign({}, this.state.tableQuery, {status:values.status});
                 this.setState({
                     tableQuery: data,
-                    pageCurrent:1
                 },function(){
                     this.props.dispatch({
-                        type:'pubStatement/fetch',
+                        type:'pubStatement/fetchSummary',
                         payload:{
                             ...this.state.tableQuery,
-                            pageCurrent:this.state.pageCurrent,
+                            pageCurrent:1,
+                            pageSize:pageSize1
                         }
                     });
+                    this.asyncQueryData(this.state.tableQuery);
                 });
             }
         });
+    }
+
+    asyncQueryData = (queryData) => {
+        this.props.dispatch({
+            type:'pubStatement/asyncQueryData',
+            payload:queryData
+        })
     }
 
     searchEmployeeOrAdvAccount = (type,value) => {
@@ -154,34 +162,33 @@ export default class SearchForm extends Component {
     }
 
     clearQuery = () => {
+        const {pageSize1} = this.props.pubStatement;
         this.props.form.resetFields();
         this.props.dispatch({
             type:'advReport/clearEmployee'
         });
-        this.props.dispatch({
-            type:'advReport/clearAdvAccount'
-        });
         this.setState({
             tableQuery:{
-                advAccountId:null,
+                affiliateId:null,
+                campaignId:null,
                 employeeId:null,
                 month:'',
-                keyWords:'',
-                finApproStatus:null
+                status:null
             },
-            advAccountValue:'',
-            employeeValue:'',
+            affiliateValue:'',
+            campaignValue:'',
             employeeRole:"1",
-            pageCurrent:1,
+            employeeValue:'',
         },function(){
             this.props.dispatch({
-                type: 'advStatement/fetch',
+                type: 'pubStatement/fetchSummary',
                 payload:{
                     ...this.state.tableQuery,
-                    pageCurrent:this.state.pageCurrent,
-                    pageSize:this.state.pageSize
+                    pageCurrent:1,
+                    pageSize:pageSize1
                 }
             });
+            this.asyncQueryData(this.state.tableQuery);
         })
     }
 

@@ -21,7 +21,7 @@ export default class PubStatement extends Component {
 
     componentDidMount() {
         this.props.dispatch({
-            type:'pubStatement/fetch',
+            type:'pubStatement/fetchSummary',
             payload:{}
         });
     }
