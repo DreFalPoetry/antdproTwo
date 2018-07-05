@@ -9,7 +9,10 @@ import {Table } from 'antd';
 export default class PubStatementTable extends Component{
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            selectedRowKeys: [],
+            selectedRows:[],
+        };
     }
 
     pageSizeChange = (current, pageSize) => {
@@ -32,9 +35,25 @@ export default class PubStatementTable extends Component{
         });
     }
 
+    //选择行时进行的操作
+    selectTableRow =  (selectedRowKeys, selectedRows) => {
+        this.setState({
+            selectedRowKeys:selectedRowKeys,
+            selectedRows:selectedRows,
+        })
+    }
+
     render(){
+        const {selectedRowKeys,selectedRows } = this.state;
         const {dataList,total,pageSize,pageCurrent} = this.props.pubStatement;
         const loading = this.props.loading;
+        const rowSelection = {
+            selectedRowKeys:selectedRowKeys,
+            onChange:this.selectTableRow,
+            // getCheckboxProps:(record)=>{
+            //     return {disabled:(record.finApproStatus == '3' || record.finApproStatus == '2')}
+            // }
+        };
         const columns = [{
             title: 'Affiliate',
             dataIndex: 'affiliateId',
@@ -80,6 +99,7 @@ export default class PubStatementTable extends Component{
         }];
         return(    
             <Table 
+                rowSelection={rowSelection}
                 columns={columns} 
                 dataSource={dataList} 
                 loading={loading}
