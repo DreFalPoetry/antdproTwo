@@ -383,7 +383,10 @@ export default class AdvStatement extends Component {
     clearQuery = () => {
         this.props.form.resetFields();
         this.props.dispatch({
-            type:'advReport/clearEmployeeAndAdvAccount'
+            type:'advReport/clearEmployee'
+        });
+        this.props.dispatch({
+            type:'advReport/clearAdvAccount'
         });
         this.setState({
             tableQuery:{

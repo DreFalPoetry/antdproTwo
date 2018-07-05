@@ -1,6 +1,5 @@
-import { queryAdvStatement,queryEmployee,queryAdvAccount,queryPubStatementSummary } from '../services/api';
+import { queryAffiliate,queryCampaign,queryEmployee,queryPubStatement,queryPubStatementSummary } from '../services/api';
 import {callbackDeal} from '../utils/serviceCallBack';
-import { list } from 'postcss';
 
 export default {
     namespace: 'pubStatement',
@@ -16,12 +15,14 @@ export default {
             invoiced:null,
             rejected:null,
             approved:null
-        }
+        },
+        affiliateList:[],
+        campaignList:[]
     },
 
     effects: {
         *fetch({payload}, { call, put }) {
-            const response = yield call(queryAdvStatement,payload);
+            const response = yield call(queryPubStatement,payload);
             const finallResult = callbackDeal(response);
             if (finallResult == 'successCallBack') {
                 const dataList = response.data;
@@ -53,6 +54,44 @@ export default {
                 });
             }
         },
+        *fetchAffiliate({ payload }, { call, put }) {
+            const response = yield call(queryAffiliate,payload);
+            const finallResult = callbackDeal(response);
+            if (finallResult == 'successCallBack') {
+                const affiliateTempList = response.data;
+                let affiliateList = [];
+                affiliateList = affiliateTempList.map((item,index) => {
+                    let listItem = {};
+                    listItem.text = `${item.id} - ${item.name}`;
+                    listItem.value = item.id; 
+                    listItem.key = index+1;
+                    return listItem;
+                });
+                yield put({
+                    type: 'asyncAffiliateList',
+                    payload: affiliateList,
+                });
+            }
+        },
+        *fetchCampaign({ payload }, { call, put }) {
+            const response = yield call(queryCampaign,payload);
+            const finallResult = callbackDeal(response);
+            if (finallResult == 'successCallBack') {
+                const tempCampaignList = response.data;
+                let campaignList = [];
+                campaignList = tempCampaignList.map((item,index) => {
+                    let listItem = {};
+                    listItem.text = `${item.id} - ${item.name}`;
+                    listItem.value = item.id; 
+                    listItem.key = index+1;
+                    return listItem;
+                });
+                yield put({
+                    type: 'asyncCampaignList',
+                    payload: campaignList,
+                });
+            }
+        },
     },
 
     reducers: {
@@ -72,6 +111,18 @@ export default {
             return {
                 ...state,
                 headerInfo:payload,
+            };
+        },
+        asyncAffiliateList(state, { payload }) {
+            return {
+                ...state,
+                affiliateList:payload,
+            };
+        },
+        asyncCampaignList(state, { payload }) {
+            return {
+                ...state,
+                campaignList:payload,
             };
         },
         clear() {

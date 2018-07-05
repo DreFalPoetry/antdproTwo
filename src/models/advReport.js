@@ -121,11 +121,16 @@ export default {
                 advAccountList:payload,
             };
         },
-        clearEmployeeAndAdvAccount(state) {
+        clearEmployee(state) {
             return {
                 ...state,
-                employeeList:[],
-                advAccountList:[],
+                employeeList:[]
+            };
+        },
+        clearAdvAccount(state) {
+            return {
+                ...state,
+                advAccountList:[]
             };
         },
         clear() {

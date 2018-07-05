@@ -137,3 +137,18 @@ export async function queryAdvCredit(params) {
 export async function queryPubStatementSummary(params) {
     return request(`/api/pubStatementSummary?${stringify(params)}`);
 }
+
+//PubStatement接口
+export async function queryPubStatement(params) {
+    return request(`/api/pubStatement?${stringify(params)}`);
+}
+
+//公用 智能搜索 campaign
+export async function queryCampaign(params) {
+    return request(`/api/campaign?${stringify(params)}`);
+}
+
+//公用 智能搜索 affiliate
+export async function queryAffiliate(params) {
+    return request(`/api/affiliate?${stringify(params)}`);
+}

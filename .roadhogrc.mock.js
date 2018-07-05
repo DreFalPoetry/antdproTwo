@@ -301,6 +301,57 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    //pubStatement接口
+    'GET /api/pubStatement':mockjs.mock({
+        'code':0,
+        'data|50': [{ 
+            'affiliateId|+1':7001, 
+            'affiliateName': '@name',
+            'campaignId|+1':10122,
+            'campaignName':'@name',
+            'payout':2323,
+            'payoutInfo|3':[{
+                'payout|1-100.2':32.15,
+                'totalConv|100-200':123,
+                'logDeductedConv|100-200':122,
+                'systemAmount|10-100':23
+            }],
+            'totalConv|200-400':233,
+            'logDeductedConv|100-300':223,
+            'systemAmount|20-100.2':122,
+            'deductedConv':'',
+            'deductedReasonFile':'',
+            'deductedReason':'原因原因原因',
+            'deductedAmount':'',
+            'adjustAmount':'',
+            'invoiceAmount':'',
+            'currency':'',
+            'status':0
+        }],
+        'headerInfo':{
+            "total":32,
+            "invoiced":18,
+            "rejected":4,
+            "approved":3
+        },
+        'total':50,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
+    'GET /api/campaign':mockjs.mock({
+        'code':0,
+        'data|30': [{
+            'id|+1':4101, 
+            name: '@name'
+        }]
+    }),
+    'GET /api/affiliate ':mockjs.mock({
+        'code':0,
+        'data|30': [{
+            'id|+1':4201, 
+            name: '@name'
+        }]
+    })
 };
 
 export default (noProxy ? {} : delay(proxy, 1000));

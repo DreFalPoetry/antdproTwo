@@ -1,19 +1,30 @@
 import React, { Component ,Fragment} from 'react';
 import {Card,Form,Row, Col, Input, Button,AutoComplete,DatePicker,Radio,Select ,Table,Alert,Badge,Popconfirm, message ,Icon,Tabs } from 'antd';
-import commonStyle from '../Advertiser/Report.less';
+import commonStyle from '../../Advertiser/Report.less';
 import moment from 'moment';
+import { connect } from 'dva';
+const FormItem = Form.Item;
+const { MonthPicker } = DatePicker;
+const Option = Select.Option;
 
+@Form.create()
+@connect(({ advReport,pubStatement,advStatement }) => ({
+    advReport,
+    pubStatement,
+    advStatement
+}))
 export default class SearchForm extends Component {
     state = {
         tableQuery:{
-            advAccountId:null,
+            affiliateId:null,
+            campaignId:null,
             employeeId:null,
             month:'',
-            keyWords:'',
-            finApproStatus:null
+            status:null
         },
         pageCurrent:1,
-        advAccountValue:'',
+        affiliateValue:'',
+        campaignValue:'',
         employeeRole:"1",
         employeeValue:'',
     }
@@ -28,11 +39,10 @@ export default class SearchForm extends Component {
                     pageCurrent:1
                 },function(){
                     this.props.dispatch({
-                        type:'advStatement/fetch',
+                        type:'pubStatement/fetch',
                         payload:{
                             ...this.state.tableQuery,
                             pageCurrent:this.state.pageCurrent,
-    
                         }
                     });
                 });
@@ -81,6 +91,51 @@ export default class SearchForm extends Component {
         }
     }
 
+    //搜索Affiliate 
+    searchAffiliate = (value) => {
+        console.log(value);
+        this.tableQueryReplace({affiliateId:null});
+        this.setState({
+            affiliateValue:value,
+        })
+        this.props.dispatch({
+            type:'pubStatement/fetchAffiliate',
+            payload: {
+                keyWord: value,
+            },
+        });
+    }
+
+    //选择Affiliate
+    selectAffiliate = (value) => {
+        this.tableQueryReplace({affiliateId:value});
+        this.setState({
+            affiliateValue:value,
+        });
+    }
+
+    //搜索Campaign 
+    searchCampaign  = (value) => {
+        this.tableQueryReplace({campaignId:null});
+        this.setState({
+            campaignValue:value,
+        })
+        this.props.dispatch({
+            type:'pubStatement/fetchCampaign',
+            payload: {
+                keyWord: value,
+            },
+        });
+    }
+
+    //选择Campaign
+    selectCampaign = (value) => {
+        this.tableQueryReplace({campaignId:value});
+        this.setState({
+            campaignValue:value,
+        });
+    }
+
     tableQueryReplace = (childObj) =>{
         let data = Object.assign({}, this.state.tableQuery, childObj);
         this.setState({
@@ -101,7 +156,10 @@ export default class SearchForm extends Component {
     clearQuery = () => {
         this.props.form.resetFields();
         this.props.dispatch({
-            type:'advReport/clearEmployeeAndAdvAccount'
+            type:'advReport/clearEmployee'
+        });
+        this.props.dispatch({
+            type:'advReport/clearAdvAccount'
         });
         this.setState({
             tableQuery:{
@@ -128,29 +186,62 @@ export default class SearchForm extends Component {
     }
 
     render(){
-        const {employeeList,advAccountList} = this.props.advReport;
+        const { getFieldDecorator } = this.props.form;
+        const {employeeList} = this.props.advReport;
+        const {  affiliateList,campaignList} = this.props.pubStatement;
         return (
             <div className={commonStyle.searchFormWrapper}>
             <Form layout="inline" onSubmit={this.submitSearch}>
                 <Row>
                     <Col sm={{span:12}} xs={{span:24}}> 
-                        <FormItem label="Customer">
-                            {getFieldDecorator('keyWords')(
-                                <Input placeholder="Search by code or key word" autoComplete="off"/>
-                            )}
+                        <FormItem label="Affiliate">
+                            <AutoComplete
+                                allowClear
+                                value={this.state.affiliateValue}
+                                dataSource={affiliateList}
+                                style={{ width: 230 }}
+                                onSelect={this.selectAffiliate.bind(this)}
+                                onSearch={this.searchAffiliate.bind(this)}
+                                placeholder="Search Campaign"
+                            />
                         </FormItem>
                     </Col>
                     <Col sm={{span:12}} xs={{span:24}}> 
-                        <FormItem label="Advertiser Account">
+                        <FormItem label="Campaign">
                             <AutoComplete
                                 allowClear
-                                value={this.state.advAccountValue}
-                                dataSource={advAccountList}
+                                value={this.state.campaignValue}
+                                dataSource={campaignList}
                                 style={{ width: 230 }}
-                                onSelect={this.selectEmployeeOrAdvAccount.bind(this,'advAccount')}
-                                onSearch={this.searchEmployeeOrAdvAccount.bind(this,'advAccount')}
-                                placeholder="search advertiser account"
+                                onSelect={this.selectCampaign.bind(this)}
+                                onSearch={this.searchCampaign.bind(this)}
+                                placeholder="Search Campaign"
                             />
+                        </FormItem>
+                    </Col>
+                    <Col sm={{span:12}} xs={{span:24}}>
+                        <FormItem label="Select Month">
+                            <MonthPicker   
+                                value={this.state.tableQuery.month?moment(this.state.tableQuery.month):null} 
+                                onChange={this.dateRangeChange} 
+                            />
+                        </FormItem>
+                    </Col>
+                    <Col sm={{span:12}} xs={{span:24}}>
+                        <FormItem label="Status">
+                        {getFieldDecorator('finApproStatus')(
+                            <Select 
+                                style={{ width: 230 }} 
+                                placeholder="Choose Status"
+                                allowClear
+                                >
+                                <Option value="0">Initial</Option>
+                                <Option value="1">Pending-Audit</Option>
+                                <Option value="2">Approved</Option>
+                                <Option value="3">Rejected</Option>
+                                <Option value="4">Packaged</Option>
+                            </Select>
+                        )}
                         </FormItem>
                     </Col>
                     <Col sm={{span:12}} xs={{span:24}}>
@@ -176,26 +267,6 @@ export default class SearchForm extends Component {
                             />
                         </FormItem>
                     </Col>
-                    <Col sm={{span:12}} xs={{span:24}}>
-                        <FormItem label="Date Range">
-                            <MonthPicker   
-                                value={this.state.tableQuery.month?moment(this.state.tableQuery.month):null} 
-                                onChange={this.dateRangeChange} 
-                            />
-                        </FormItem>
-                    </Col>
-                    <Col sm={{span:12}} xs={{span:24}}>
-                        <FormItem label="Approve Status">
-                        {getFieldDecorator('finApproStatus')(
-                            <Select style={{ width: 230 }} placeholder="Choose Status" allowClear>
-                                <Option value="0">Pending-Audit</Option>
-                                <Option value="1">Approved</Option>
-                                <Option value="2">Rejected</Option>
-                                <Option value="3">Invoiced</Option>
-                            </Select>
-                        )}
-                        </FormItem>
-                    </Col>
                     <div className={commonStyle.searchBtnWrapper}>
                         <Button type="primary" htmlType="submit">QUERY</Button>
                         <Button style={{marginLeft:'10px'}}  onClick={this.clearQuery}>RESET</Button>
@@ -205,5 +276,4 @@ export default class SearchForm extends Component {
             </div>
         )
     }
-    
 }
