@@ -1,10 +1,9 @@
 import React,{Component } from 'react';
 import { connect } from 'dva';
 import {Table } from 'antd';
-@connect(({ advReport,pubStatement,advStatement,loading }) => ({
+@connect(({ advReport,pubStatement }) => ({
     advReport,
-    pubStatement,
-    advStatement
+    pubStatement
 }))
 
 /**

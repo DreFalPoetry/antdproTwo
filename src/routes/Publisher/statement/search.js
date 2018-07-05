@@ -8,10 +8,9 @@ const { MonthPicker } = DatePicker;
 const Option = Select.Option;
 
 @Form.create()
-@connect(({ advReport,pubStatement,advStatement }) => ({
+@connect(({ advReport,pubStatement }) => ({
     advReport,
-    pubStatement,
-    advStatement
+    pubStatement
 }))
 export default class SearchForm extends Component {
     state = {

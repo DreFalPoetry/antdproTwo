@@ -7,10 +7,8 @@ import SummaryTable from './summaryTable';
 
 const TabPane = Tabs.TabPane;
 
-@connect(({ advReport,pubStatement,advStatement,loading }) => ({
-    advReport,
+@connect(({pubStatement,loading }) => ({
     pubStatement,
-    advStatement,
     loading: loading.effects['pubStatement/fetch'],  
 }))
 export default class PubStatement extends Component {
@@ -29,7 +27,7 @@ export default class PubStatement extends Component {
     render() {
         const {loading} = this.props;
         return (
-            <div>
+            <Fragment>
                 <PageHeaderLayout>
                     <Card bordered={false}>
                         <SearchForm/>
@@ -43,7 +41,7 @@ export default class PubStatement extends Component {
                         </Tabs>
                     </Card>
                 </PageHeaderLayout>
-            </div>
+            </Fragment>
         )
     }
 }
