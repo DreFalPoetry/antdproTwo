@@ -1,8 +1,7 @@
 import React,{Component } from 'react';
 import { connect } from 'dva';
 import {Table } from 'antd';
-@connect(({ advReport,pubStatement }) => ({
-    advReport,
+@connect(({ pubStatement }) => ({
     pubStatement
 }))
 
@@ -58,7 +57,7 @@ export default class SummaryTable extends Component{
     initalTableList = (pageSize,pageCurrent) => {
         const {tableQuery} = this.props.pubStatement; 
         this.props.dispatch({
-            type: 'pubStatement/fetch',
+            type: 'pubStatement/fetchSummary',
             payload:{
                ...tableQuery,
                pageSize:pageSize,

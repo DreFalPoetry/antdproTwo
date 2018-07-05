@@ -37,6 +37,9 @@ export default {
             if (finallResult == 'successCallBack') {
                 const dataList = response.data;
                 const headerInfo = response.headerInfo;
+                const total = response.total;
+                const pageSize = response.pageSize;
+                const pageCurrent = response.pageCurrent;
                 dataList.filter((item,index) => {
                     item.uniqueKey = index+1;
                 });
@@ -48,6 +51,10 @@ export default {
                     type: 'asyncHeaderInfo',
                     payload: headerInfo,
                 });
+                yield put({
+					type: 'syancTablePage',
+					payload: { total, pageSize, pageCurrent},
+				});
             }
         },
         *fetchSummary({payload}, { call, put }) {
@@ -62,7 +69,7 @@ export default {
                 const pageSize1 = response.pageSize;
                 const pageCurrent1 = response.pageCurrent;
 				yield put({
-					type: 'syancTablePage',
+					type: 'syancTablePage1',
 					payload: { total1, pageSize1, pageCurrent1},
 				});
                 yield put({
@@ -148,7 +155,15 @@ export default {
                 tableQuery:payload,
             };
         },
-        syancTablePage(state, { payload: { total1, pageSize1,pageCurrent1 } }) {
+        syancTablePage(state, { payload: { total, pageSize,pageCurrent } }) {
+			return {
+				...state,
+				total,
+                pageSize,
+                pageCurrent
+			};
+        },
+        syancTablePage1(state, { payload: { total1, pageSize1,pageCurrent1 } }) {
 			return {
 				...state,
 				total1,

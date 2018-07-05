@@ -4,12 +4,14 @@ import {Card,Tabs } from 'antd';
 import { connect } from 'dva';
 import SearchForm from './search';
 import SummaryTable from './summaryTable';
+import PubStatementTable from './statementTable';
 
 const TabPane = Tabs.TabPane;
 
 @connect(({pubStatement,loading }) => ({
     pubStatement,
-    loading: loading.effects['pubStatement/fetch'],  
+    loading: loading.effects['pubStatement/fetchSummary'],  
+    mainLoading:loading.effects['pubStatement/fetch']
 }))
 export default class PubStatement extends Component {
     constructor(props) {
@@ -19,13 +21,17 @@ export default class PubStatement extends Component {
 
     componentDidMount() {
         this.props.dispatch({
+            type:'pubStatement/fetch',
+            payload:{}
+        });
+        this.props.dispatch({
             type:'pubStatement/fetchSummary',
             payload:{}
         });
     }
 
     render() {
-        const {loading} = this.props;
+        const {loading,mainLoading} = this.props;
         return (
             <Fragment>
                 <PageHeaderLayout>
@@ -36,7 +42,7 @@ export default class PubStatement extends Component {
                                 <SummaryTable loading={loading}/>
                             </TabPane>
                             <TabPane tab="Tab 2" key="2">
-                                2
+                                <PubStatementTable loading={mainLoading}/>
                             </TabPane>
                         </Tabs>
                     </Card>
