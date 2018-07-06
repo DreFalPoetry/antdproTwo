@@ -19,7 +19,11 @@ export default class PubStatementTable extends Component{
             deductedConvEditble:[],
             deductedConvs:[],
             deductedAmountEditble:[],
-            deductedAmounts:[]
+            deductedAmounts:[],
+            adjustAmountEditble:[],
+            adjustAmounts:[],
+            invoiceAmountEditble:[],
+            invoiceAmounts:[]
         };
     }
 
@@ -221,9 +225,63 @@ export default class PubStatementTable extends Component{
         },{
             title: 'Adjust Amount$',
             dataIndex: 'adjustAmount',
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !this.state.adjustAmountEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCellValue.bind(this,index,'adjustAmountEditble')}
+                            />
+                        </div>:
+                        <div>
+                            <Input value={this.state.adjustAmounts[index]!=undefined?this.state.adjustAmounts[index]:text} 
+                                    onChange={this.inputCellValue.bind(this,index,'adjustAmounts')}
+                                    size="small"
+                                    style={{width:80,marginRight:5}}
+                            />
+                            <Button type='primary' size='small' 
+                                onClick={this.sureCellInput.bind(this,index,record,'adjustAmount','adjustAmounts','adjustAmountEditble')}>Sure
+                            </Button>
+                        </div>
+                    )
+                }else{
+                    return  text || '';
+                }
+            }
         },{
             title: 'Invoice Amount',
             dataIndex: 'invoiceAmount',
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !this.state.invoiceAmountEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCellValue.bind(this,index,'invoiceAmountEditble')}
+                            />
+                        </div>:
+                        <div>
+                            <Input value={this.state.invoiceAmounts[index]!=undefined?this.state.invoiceAmounts[index]:text} 
+                                    onChange={this.inputCellValue.bind(this,index,'invoiceAmounts')}
+                                    size="small"
+                                    style={{width:80,marginRight:5}}
+                            />
+                            <Button type='primary' size='small' 
+                                onClick={this.sureCellInput.bind(this,index,record,'invoiceAmount','invoiceAmounts','invoiceAmountEditble')}>Sure
+                            </Button>
+                        </div>
+                    )
+                }else{
+                    return  text || '';
+                }
+            }
         },{
             title: 'Currency',
             dataIndex: 'currency',
