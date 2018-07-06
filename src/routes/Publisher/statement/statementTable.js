@@ -1,6 +1,9 @@
 import React,{Component } from 'react';
 import { connect } from 'dva';
-import {Table } from 'antd';
+import {Table,Select,Button,Icon ,Input,message  } from 'antd';
+import commonStyle from '../../Advertiser/Report.less';
+import {deepCloneObj} from '../../../utils/commonFunc';
+const Option = Select.Option;
 
 @connect(({pubStatement }) => ({
     pubStatement
@@ -12,6 +15,8 @@ export default class PubStatementTable extends Component{
         this.state = {
             selectedRowKeys: [],
             selectedRows:[],
+            deductedConvEditble:[],
+            deductedConvs:[]
         };
     }
 
@@ -43,6 +48,69 @@ export default class PubStatementTable extends Component{
         })
     }
 
+    //点击编辑按钮编辑单元格
+    editdeductedConv = (index) => {
+        let tempArr =deepCloneObj(this.state.deductedConvEditble);
+        tempArr[index] = true;
+        this.setState({
+            deductedConvEditble:tempArr
+        })
+    }
+
+     //表格输入当前的Deducted Conv
+     inputDeductedConvs = (index,keyName,e) => {
+        const { value } = e.target;
+        const reg = /^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/;
+        let tempArr = deepCloneObj(this.state[keyName]);
+        console.log(tempArr);
+        if ((!isNaN(value) && reg.test(value)) || !value) {
+            tempArr[index] = value;
+            this.setState({
+                [keyName]:tempArr
+            });
+        }
+    }
+
+    //确认单元格的输入
+    sureDeductedConv = (index,record) => {
+        if(this.state.deductedConvs[index]){
+            // const response = advStatementUpdates('1001',{invoiAmount:this.state.invoiceAmount[index]});
+            // response.then(res => {return res;})
+            // .then(json => {
+            //     if(json.code == 0){
+                    record.deductedConv = this.state.deductedConvs[index];
+                    const {dataList} = this.props.pubStatement;
+                    this.props.dispatch({
+                        type:'pubStatement/asyncDataList',
+                        payload: this.replaceDataList(dataList,record),
+                    });
+                    this.asyncCellEditbleStatus('deductedConvEditble',index);
+                // }
+            // });
+        }
+    }
+
+    //common Replace prevStatus
+    replaceDataList = (dataList,record) => {
+        let tempDataList = deepCloneObj(dataList);
+        tempDataList.forEach(function(item,ind){
+            if(item.uniqueKey==record.uniqueKey){
+                tempDataList.splice(ind,1,record);
+            }
+        });
+        return tempDataList;
+    }
+
+    //common Replace EditbleStatus
+    asyncCellEditbleStatus = (keyName,index) => {
+        message.success('save');
+        let tempEdit  = deepCloneObj(this.state[keyName]);
+        tempEdit[index] = false;
+        this.setState({
+            [keyName]:tempEdit
+        })
+    }
+
     render(){
         const {selectedRowKeys,selectedRows } = this.state;
         const {dataList,total,pageSize,pageCurrent} = this.props.pubStatement;
@@ -54,6 +122,8 @@ export default class PubStatementTable extends Component{
             //     return {disabled:(record.finApproStatus == '3' || record.finApproStatus == '2')}
             // }
         };
+        const userRoles = localStorage.getItem('antd-pro-authority');
+        const userRole = userRoles.split(',');
         const columns = [{
             title: 'Affiliate',
             dataIndex: 'affiliateId',
@@ -75,6 +145,31 @@ export default class PubStatementTable extends Component{
         },{
             title: 'Deducted Conv',
             dataIndex: 'deductedConv',
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !this.state.deductedConvEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editdeductedConv.bind(this,index)}
+                            />
+                        </div>:
+                        <div>
+                            <Input value={this.state.deductedConvs[index]!=undefined?this.state.deductedConvs[index]:text} 
+                                    onChange={this.inputDeductedConvs.bind(this,index,'deductedConvs')}
+                                    size="small"
+                                    style={{width:80,marginRight:5}}
+                            />
+                            <Button type='primary' size='small' onClick={this.sureDeductedConv.bind(this,index,record)}>Sure</Button>
+                        </div>
+                    )
+                }else{
+                    return  text || '';
+                }
+            }
         },{
             title: 'Deducted Reason',
             dataIndex: 'deductedReason',
@@ -96,6 +191,20 @@ export default class PubStatementTable extends Component{
         },{
             title: '',
             dataIndex: '',
+            render:(text,record,index) => {
+                return (
+                    <Select 
+                        size="small" 
+                        placeholder='Apply Action'
+                        style={{width:'130px'}}
+                        >
+                        <Option value="1">Move to Next Month</Option>
+                        <Option value="2">Approve</Option>
+                        <Option value="3">Reject</Option>
+                        <Option value="4">Revert to Campaign Month</Option>
+                    </Select>
+                )
+            }
         }];
         return(    
             <Table 
