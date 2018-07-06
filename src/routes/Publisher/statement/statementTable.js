@@ -5,6 +5,7 @@ import commonStyle from '../../Advertiser/Report.less';
 import {deepCloneObj} from '../../../utils/commonFunc';
 import {advStatementUpdates} from '../../../services/api';
 import AttachmentModal from './attachmentModal';
+import GenerateInvoiceModal from './generateInvoiceModal';
 const Option = Select.Option;
 const FormItem = Form.Item;
 @Form.create()
@@ -540,7 +541,8 @@ export default class PubStatementTable extends Component{
                     footer={() => (
                         <div>{headerInfo.total} campaigns，已开票{headerInfo.invoiced}个，Rejected{headerInfo.rejected}个，Approved未开票{headerInfo.approved}个</div>
                     )}
-                /> 
+                />
+                <GenerateInvoiceModal/> 
             </Fragment>
         )
     }
