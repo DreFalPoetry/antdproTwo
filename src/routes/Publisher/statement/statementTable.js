@@ -4,6 +4,7 @@ import {Table,Select,Button,Icon ,Input,message  } from 'antd';
 import commonStyle from '../../Advertiser/Report.less';
 import {deepCloneObj} from '../../../utils/commonFunc';
 import {advStatementUpdates} from '../../../services/api';
+import AttachmentModal from './attachmentModal';
 const Option = Select.Option;
 
 @connect(({pubStatement }) => ({
@@ -26,6 +27,8 @@ export default class PubStatementTable extends Component{
             invoiceAmounts:[],
             currencyEditble:[],
             cellCurrencys:[],
+            deductedReasonEditble:[],
+            attachModalVisible:false,
             rowOperates:[]
         };
     }
@@ -65,6 +68,11 @@ export default class PubStatementTable extends Component{
         this.setState({
             [keyName]:tempArr
         })
+        if(keyName == 'deductedReasonEditble'){
+            this.setState({
+                attachModalVisible:true
+            })
+        }
     }
 
      //表格输入当前键入的value
@@ -153,7 +161,6 @@ export default class PubStatementTable extends Component{
 
     //选择对行进行的操作
     selectOperate = (index,value) => {
-        console.log(value);
         let tempRowOperates = deepCloneObj(this.state.rowOperates);
         tempRowOperates[index] = value;
         this.setState({
@@ -201,6 +208,18 @@ export default class PubStatementTable extends Component{
         result.thisMonth = year+'-'+month;
         result.nextMonth = year+'-'+nextMonth;
         return result;
+    }
+
+    changeAttachModalVisible = (visible,index) => {
+        this.setState({
+            attachModalVisible:visible
+        },function(){
+            let tempArr = deepCloneObj(this.state.deductedReasonEditble);
+            tempArr[index] = false;
+            this.setState({
+                deductedReasonEditble:tempArr
+            })
+        })
     }
 
     render(){
@@ -268,6 +287,30 @@ export default class PubStatementTable extends Component{
         },{
             title: 'Deducted Reason',
             dataIndex: 'deductedReason',
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !this.state.deductedReasonEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCellValue.bind(this,index,'deductedReasonEditble')}
+                            />
+                        </div>:
+                        <div>
+                            <AttachmentModal  
+                                visible={this.state.attachModalVisible} 
+                                index = {index}
+                                record = {record}
+                                changeVisible={this.changeAttachModalVisible}/>
+                        </div>
+                    )
+                }else{
+                    return  text || '';
+                }
+            }
         },{
             title: 'Deducted Amount$',
             dataIndex: 'deductedAmount',
@@ -443,25 +486,27 @@ export default class PubStatementTable extends Component{
             }
         }];
         return(    
-            <Table 
-                size="small"
-                rowSelection={rowSelection}
-                columns={columns} 
-                dataSource={dataList} 
-                loading={loading}
-                pagination={{
-                    defaultCurrent:1,
-                    total:Number(total),
-                    showSizeChanger:true,
-                    pageSize:Number(pageSize),
-                    pageSizeOptions:['10','20','30','50','100'],
-                    onShowSizeChange:this.pageSizeChange,
-                    current:Number(pageCurrent), 
-                    onChange:this.pageChange
-                }}
-                rowKey="uniqueKey"
-                bordered
-            /> 
+            <Fragment>
+                <Table 
+                    size="small"
+                    rowSelection={rowSelection}
+                    columns={columns} 
+                    dataSource={dataList} 
+                    loading={loading}
+                    pagination={{
+                        defaultCurrent:1,
+                        total:Number(total),
+                        showSizeChanger:true,
+                        pageSize:Number(pageSize),
+                        pageSizeOptions:['10','20','30','50','100'],
+                        onShowSizeChange:this.pageSizeChange,
+                        current:Number(pageCurrent), 
+                        onChange:this.pageChange
+                    }}
+                    rowKey="uniqueKey"
+                    bordered
+                /> 
+            </Fragment>
         )
     }
 }
