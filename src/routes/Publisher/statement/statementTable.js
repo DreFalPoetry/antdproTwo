@@ -1,4 +1,4 @@
-import React,{Component } from 'react';
+import React,{Component,Fragment } from 'react';
 import { connect } from 'dva';
 import {Table,Select,Button,Icon ,Input,message  } from 'antd';
 import commonStyle from '../../Advertiser/Report.less';
@@ -23,7 +23,10 @@ export default class PubStatementTable extends Component{
             adjustAmountEditble:[],
             adjustAmounts:[],
             invoiceAmountEditble:[],
-            invoiceAmounts:[]
+            invoiceAmounts:[],
+            currencyEditble:[],
+            cellCurrencys:[],
+            rowOperates:[]
         };
     }
 
@@ -95,36 +98,109 @@ export default class PubStatementTable extends Component{
             .then(json => {
                 if(json.code == 0){
                     record[fieldName] = this.state[keyName][index];
-                    const {dataList} = this.props.pubStatement;
-                    this.props.dispatch({
-                        type:'pubStatement/asyncDataList',
-                        payload: this.replaceDataList(dataList,record),
-                    });
+                    this.replaceDataList(record);
                     this.asyncCellEditbleStatus(editbleKey,index);
                 }
             });
         }
     }
 
-    //common Replace prevStatus
-    replaceDataList = (dataList,record) => {
+    //common Replace DataList 用于同步dataList信息
+    replaceDataList = (record) => {
+        const {dataList} = this.props.pubStatement;
         let tempDataList = deepCloneObj(dataList);
         tempDataList.forEach(function(item,ind){
             if(item.uniqueKey==record.uniqueKey){
                 tempDataList.splice(ind,1,record);
             }
         });
-        return tempDataList;
+        this.props.dispatch({
+            type:'pubStatement/asyncDataList',
+            payload: tempDataList,
+        });
+        message.success('save');
     }
 
     //common Replace EditbleStatus
     asyncCellEditbleStatus = (keyName,index) => {
-        message.success('save');
         let tempEdit  = deepCloneObj(this.state[keyName]);
         tempEdit[index] = false;
         this.setState({
             [keyName]:tempEdit
         })
+    }
+
+    //选择当前行的货币
+    selectCellCurrency = (index,value) => {
+        let tempCellCurrencys = deepCloneObj(this.state.cellCurrencys);
+        tempCellCurrencys[index] = value;
+        this.setState({
+            cellCurrencys:tempCellCurrencys
+        })
+    }
+
+    //返回状态对应的文字
+    showStatusWord = (status) => {
+        switch(status){
+            case 0:return 'inital';
+            case 1: return 'Pending-Audit';
+            case 2:return 'Approved';
+            case 3: return 'Rejected';
+            case 4:return 'Packaged';
+            default:return '';
+        }
+    }
+
+    //选择对行进行的操作
+    selectOperate = (index,value) => {
+        console.log(value);
+        let tempRowOperates = deepCloneObj(this.state.rowOperates);
+        tempRowOperates[index] = value;
+        this.setState({
+           rowOperates:tempRowOperates
+        })
+    }
+
+    //确认对行进行的操作
+    sureDoOperate = (index,record) => {
+        let status = this.state.rowOperates[index];
+        if(status!=undefined && status!=null){
+            if(status == 0){
+                if( 
+                    // record.deductedConv 
+                     record.deductedReason 
+                    // && record.deductedAmount 
+                    // && record.adjustAmount 
+                    // && record.invoiceAmount 
+                    // && record.currency
+                ){
+                    record.status = 1;
+                    this.replaceDataList(record);
+                    let tempArr = deepCloneObj(this.state.rowOperates);
+                    tempArr[index] = undefined;
+                    this.setState({
+                        rowOperates:tempArr
+                    })
+                }else{
+                    message.error('有信息未填写，无法提交');
+                }
+            }
+        }
+    }
+
+    judgeIsThisMoth = (date) => {
+        let result = {};
+        let year = new Date().getFullYear();
+        let month = new Date().getMonth()+1 <10?'0'+(new Date().getMonth()+1) :new Date().getMonth()+1;
+        let nextMonth = new Date().getMonth()+2 <10?'0'+(new Date().getMonth()+2) :new Date().getMonth()+2;
+        if(date.split('-')[1] == month){
+            result.isSameMonth = true;
+        }else{
+            result.isSameMonth = false;
+        }
+        result.thisMonth = year+'-'+month;
+        result.nextMonth = year+'-'+nextMonth;
+        return result;
     }
 
     render(){
@@ -285,29 +361,90 @@ export default class PubStatementTable extends Component{
         },{
             title: 'Currency',
             dataIndex: 'currency',
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !this.state.currencyEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCellValue.bind(this,index,'currencyEditble')}
+                            />
+                        </div>:
+                        <div>
+                            <Select size="small" 
+                                value={this.state.cellCurrencys[index]||String(text)||undefined} 
+                                placeholder='Select Currency'
+                                style={{ width: 100,marginRight:5 }} 
+                                onChange={this.selectCellCurrency.bind(this,index)}>
+                                <Option value="INR">INR</Option>
+                                <Option value="USD">USD</Option>
+                            </Select>
+                            <Button type='primary' size='small' 
+                                onClick={this.sureCellInput.bind(this,index,record,'currency','cellCurrencys','currencyEditble')}>Sure
+                            </Button>
+                        </div>
+                    )
+                }else{
+                    return  text || '';
+                }
+            }
         },{
             title: 'Status',
             dataIndex: 'status',
+            render:(index) => {
+                return this.showStatusWord(index);
+            }
         },{
             title: '',
             dataIndex: '',
             render:(text,record,index) => {
-                return (
-                    <Select 
-                        size="small" 
-                        placeholder='Apply Action'
-                        style={{width:'130px'}}
+                if(userRole.indexOf('admin') > -1){//角色为am
+                    let monthResult = this.judgeIsThisMoth(record.month);
+                    let isSameMonth = monthResult.isSameMonth;
+                    return <Fragment>
+                                <Select 
+                                value={this.state.rowOperates[index]}
+                                size="small" 
+                                placeholder='Choose Operate'
+                                style={{width:'130px'}}
+                                onChange={this.selectOperate.bind(this,index)}
+                                >
+                                    <Option hidden={record.status != 0 && record.status != 3} value="0">Apply</Option>
+                                    <Option hidden={record.status == 0 ||record.status == 3} value="1">Reset</Option>
+                                    <Option hidden={!isSameMonth} value="2">Move to Next Month</Option>
+                                    <Option hidden={isSameMonth} value="3">Revert to Campaign Month</Option>
+                                </Select>
+                                <Button type='primary' size='small' 
+                                    onClick={this.sureDoOperate.bind(this,index,record)}>Sure
+                                </Button>
+                            </Fragment>
+                }else{//角色为finance
+                    return (
+                        <Fragment>
+                        <Select 
+                            size="small" 
+                            placeholder='Choose Operate'
+                            style={{width:'130px'}}
+                            onChange={this.selectOperate.bind(this,index)}
                         >
-                        <Option value="1">Move to Next Month</Option>
-                        <Option value="2">Approve</Option>
-                        <Option value="3">Reject</Option>
-                        <Option value="4">Revert to Campaign Month</Option>
-                    </Select>
-                )
+                            <Option value="2">Approve</Option>
+                            <Option value="3">Reject</Option>
+                            <Option value="1">Move to Next Month</Option>
+                        </Select>
+                        <Button type='primary' size='small' 
+                            onClick={this.sureDoOperate.bind(this,index,record)}>Sure
+                        </Button>
+                        </Fragment>
+                    )
+                }
             }
         }];
         return(    
             <Table 
+                size="small"
                 rowSelection={rowSelection}
                 columns={columns} 
                 dataSource={dataList} 

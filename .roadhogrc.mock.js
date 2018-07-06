@@ -326,6 +326,7 @@ const proxy = {
             'adjustAmount':'',
             'invoiceAmount':'',
             'currency':'',
+            'month':'@date',
             'status':0
         }],
         'headerInfo':{
