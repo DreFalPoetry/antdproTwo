@@ -1,12 +1,13 @@
 import React,{Component,Fragment } from 'react';
 import { connect } from 'dva';
-import {Table,Select,Button,Icon ,Input,message  } from 'antd';
+import {Table,Select,Button,Icon ,Input,message,Row,Col,Form} from 'antd';
 import commonStyle from '../../Advertiser/Report.less';
 import {deepCloneObj} from '../../../utils/commonFunc';
 import {advStatementUpdates} from '../../../services/api';
 import AttachmentModal from './attachmentModal';
 const Option = Select.Option;
-
+const FormItem = Form.Item;
+@Form.create()
 @connect(({pubStatement }) => ({
     pubStatement
 }))
@@ -29,7 +30,10 @@ export default class PubStatementTable extends Component{
             cellCurrencys:[],
             deductedReasonEditble:[],
             attachModalVisible:false,
-            rowOperates:[]
+            rowOperates:[],
+            //关于row的多选的操作
+            showGenerateInvoiveOption:false,
+            showApproveOrRejectOption:false
         };
     }
 
@@ -222,9 +226,14 @@ export default class PubStatementTable extends Component{
         })
     }
 
+    //row批量选择操作
+    selectOption = (value) => {
+        console.log(value);
+    }
+
     render(){
         const {selectedRowKeys,selectedRows } = this.state;
-        const {dataList,total,pageSize,pageCurrent} = this.props.pubStatement;
+        const {dataList,total,pageSize,pageCurrent,headerInfo} = this.props.pubStatement;
         const loading = this.props.loading;
         const rowSelection = {
             selectedRowKeys:selectedRowKeys,
@@ -487,6 +496,29 @@ export default class PubStatementTable extends Component{
         }];
         return(    
             <Fragment>
+                <Row>
+                    <Col sm={{span:12}} xs={{span:24}}>
+                        <Form layout="inline" style={{marginBottom:'10px'}}>
+                            <FormItem label="Batch Actions">
+                            {
+                                this.state.showGenerateInvoiveOption?(
+                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
+                                        <Option value="3">Generate Invoice</Option>
+                                    </Select>
+                                ):null
+                            }
+                            {
+                                this.state.showApproveOrRejectOption?(
+                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
+                                        <Option value="1">Approve</Option>
+                                        <Option value="2">Reject</Option>
+                                    </Select>
+                                ):null
+                            }
+                            </FormItem>
+                        </Form>
+                    </Col>
+                </Row>
                 <Table 
                     size="small"
                     rowSelection={rowSelection}
@@ -505,6 +537,9 @@ export default class PubStatementTable extends Component{
                     }}
                     rowKey="uniqueKey"
                     bordered
+                    footer={() => (
+                        <div>{headerInfo.total} campaigns，已开票{headerInfo.invoiced}个，Rejected{headerInfo.rejected}个，Approved未开票{headerInfo.approved}个</div>
+                    )}
                 /> 
             </Fragment>
         )
