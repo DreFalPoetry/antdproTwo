@@ -3,6 +3,7 @@ import { connect } from 'dva';
 import {Table,Select,Button,Icon ,Input,message  } from 'antd';
 import commonStyle from '../../Advertiser/Report.less';
 import {deepCloneObj} from '../../../utils/commonFunc';
+import {advStatementUpdates} from '../../../services/api';
 const Option = Select.Option;
 
 @connect(({pubStatement }) => ({
@@ -16,7 +17,9 @@ export default class PubStatementTable extends Component{
             selectedRowKeys: [],
             selectedRows:[],
             deductedConvEditble:[],
-            deductedConvs:[]
+            deductedConvs:[],
+            deductedAmountEditble:[],
+            deductedAmounts:[]
         };
     }
 
@@ -49,20 +52,24 @@ export default class PubStatementTable extends Component{
     }
 
     //点击编辑按钮编辑单元格
-    editdeductedConv = (index) => {
-        let tempArr =deepCloneObj(this.state.deductedConvEditble);
+    editCellValue = (index,keyName) => {
+        let tempArr =deepCloneObj(this.state[keyName]);
         tempArr[index] = true;
         this.setState({
-            deductedConvEditble:tempArr
+            [keyName]:tempArr
         })
     }
 
-     //表格输入当前的Deducted Conv
-     inputDeductedConvs = (index,keyName,e) => {
+     //表格输入当前键入的value
+     inputCellValue = (index,keyName,e) => {
         const { value } = e.target;
-        const reg = /^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/;
+        let reg = /^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/;
+        if(keyName == 'deductedConvs'){
+            reg = /^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/;
+        }else if(keyName == 'deductedAmounts'){
+
+        }
         let tempArr = deepCloneObj(this.state[keyName]);
-        console.log(tempArr);
         if ((!isNaN(value) && reg.test(value)) || !value) {
             tempArr[index] = value;
             this.setState({
@@ -71,22 +78,27 @@ export default class PubStatementTable extends Component{
         }
     }
 
-    //确认单元格的输入
-    sureDeductedConv = (index,record) => {
-        if(this.state.deductedConvs[index]){
-            // const response = advStatementUpdates('1001',{invoiAmount:this.state.invoiceAmount[index]});
-            // response.then(res => {return res;})
-            // .then(json => {
-            //     if(json.code == 0){
-                    record.deductedConv = this.state.deductedConvs[index];
+    /**
+     * 确认单元格的输入
+     * @param {传递的字段名} fieldName
+     * @param {state中存储的保存值的名字} keyName
+     * @param {state中存储的保存是否为可编辑状态的字段} editbleKey
+     */
+    sureCellInput = (index,record,fieldName,keyName,editbleKey) => {
+        if(this.state[keyName][index]){
+            const response = advStatementUpdates('1001',{[fieldName]:this.state[keyName][index]});
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    record[fieldName] = this.state[keyName][index];
                     const {dataList} = this.props.pubStatement;
                     this.props.dispatch({
                         type:'pubStatement/asyncDataList',
                         payload: this.replaceDataList(dataList,record),
                     });
-                    this.asyncCellEditbleStatus('deductedConvEditble',index);
-                // }
-            // });
+                    this.asyncCellEditbleStatus(editbleKey,index);
+                }
+            });
         }
     }
 
@@ -154,16 +166,19 @@ export default class PubStatementTable extends Component{
                             <Icon
                                 type="edit"
                                 className={commonStyle.editableCellIcon}
-                                onClick={this.editdeductedConv.bind(this,index)}
+                                onClick={this.editCellValue.bind(this,index,'deductedConvEditble')}
                             />
                         </div>:
                         <div>
                             <Input value={this.state.deductedConvs[index]!=undefined?this.state.deductedConvs[index]:text} 
-                                    onChange={this.inputDeductedConvs.bind(this,index,'deductedConvs')}
+                                    onChange={this.inputCellValue.bind(this,index,'deductedConvs')}
                                     size="small"
                                     style={{width:80,marginRight:5}}
                             />
-                            <Button type='primary' size='small' onClick={this.sureDeductedConv.bind(this,index,record)}>Sure</Button>
+                            <Button type='primary' size='small' 
+                                    onClick={this.sureCellInput.bind(this,index,record,'deductedConv','deductedConvs','deductedConvEditble')}>
+                                    Sure
+                            </Button>
                         </div>
                     )
                 }else{
@@ -176,6 +191,33 @@ export default class PubStatementTable extends Component{
         },{
             title: 'Deducted Amount$',
             dataIndex: 'deductedAmount',
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){
+                    return (
+                        !this.state.deductedAmountEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {text || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCellValue.bind(this,index,'deductedAmountEditble')}
+                            />
+                        </div>:
+                        <div>
+                            <Input value={this.state.deductedAmounts[index]!=undefined?this.state.deductedAmounts[index]:text} 
+                                    onChange={this.inputCellValue.bind(this,index,'deductedAmounts')}
+                                    size="small"
+                                    style={{width:80,marginRight:5}}
+                            />
+                            <Button type='primary' size='small' 
+                                onClick={this.sureCellInput.bind(this,index,record,'deductedAmount','deductedAmounts','deductedAmountEditble')}>Sure
+                            </Button>
+                        </div>
+                    )
+                }else{
+                    return  text || '';
+                }
+            }
         },{
             title: 'Adjust Amount$',
             dataIndex: 'adjustAmount',
