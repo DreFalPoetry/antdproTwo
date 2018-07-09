@@ -660,7 +660,7 @@ export default class PubStatement extends Component {
                 return {disabled:(record.finApproStatus == '3' || record.finApproStatus == '2')}
             }
         };
-        const userRoles = localStorage.getItem('antd-pro-authority');
+        const userRoles = sessionStorage.getItem('userRole');
         const userRole = userRoles.split(',');
         const columns = [{
             title: 'Campaign',
