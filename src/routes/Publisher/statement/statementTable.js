@@ -1,6 +1,6 @@
 import React,{Component,Fragment } from 'react';
 import { connect } from 'dva';
-import {Table,Select,Button,Icon ,Input,message,Row,Col,Form} from 'antd';
+import {Table,Select,Button,Icon ,Input,message,Row,Col,Form,Alert} from 'antd';
 import commonStyle from '../../Advertiser/Report.less';
 import {deepCloneObj} from '../../../utils/commonFunc';
 import {advStatementUpdates} from '../../../services/api';
@@ -34,7 +34,8 @@ export default class PubStatementTable extends Component{
             rowOperates:[],
             //关于row的多选的操作
             showGenerateInvoiveOption:false,
-            showApproveOrRejectOption:false
+            showApproveOrRejectOption:false,
+            totalInvoiceAmount:[]
         };
     }
 
@@ -61,8 +62,85 @@ export default class PubStatementTable extends Component{
     //选择行时进行的操作
     selectTableRow =  (selectedRowKeys, selectedRows) => {
         this.setState({
+            showGenerateInvoiveOption:false,
+            showApproveOrRejectOption:false
+        });
+        let totalInvoiceAmount = [];
+        let rowStatus = [];
+        selectedRows.map((item) => {
+            if(item.currency && item.invoiceAmount){
+                rowStatus.push({status:item.finApproStatus,currency:item.currency});
+            }
+            if(item.currency == "USD"){  
+                totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
+            }else if(item.currency == "INR"){   
+                totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
+            }
+        });
+        
+        let arrTemp1 = [];
+        if(totalInvoiceAmount.length){
+            let usdTotal = 0;
+            let inrTotal = 0;
+            totalInvoiceAmount.map((item)=>{
+                if(item.type == 'USD'){
+                    usdTotal+= item.total;
+                }else if(item.type == 'INR'){
+                    inrTotal+=item.total;
+                }
+            });
+            arrTemp1.push({'type':'USD','total':usdTotal})
+            arrTemp1.push({'type':'INR','total':inrTotal})
+            this.setState({ totalInvoiceAmount:arrTemp1});
+        }else{
+            this.setState({ totalInvoiceAmount:[]});
+        }
+        if(rowStatus.length){
+            let gerInv = true;
+            let apprOrRej = true;
+            let theSameCurrency = true;
+            rowStatus.map((item,index,arr)=>{
+                if(item.status != '1'){
+                    gerInv = false;
+                }
+                if(item.status != '0'){
+                    apprOrRej = false;
+                }
+                let firstCurrency = arr[0].currency;
+                if(item.currency != firstCurrency){
+                    theSameCurrency = false;
+                }
+            })
+            if(gerInv && theSameCurrency){
+                this.setState({
+                    showGenerateInvoiveOption:true,
+                    showApproveOrRejectOption:false
+                })
+            };
+            if(apprOrRej){
+                this.setState({
+                    showGenerateInvoiveOption:false,
+                    showApproveOrRejectOption:true
+                })
+            }
+        }else{
+            this.setState({
+                showGenerateInvoiveOption:false,
+                showApproveOrRejectOption:false
+            })
+        }
+        
+        this.setState({
             selectedRowKeys:selectedRowKeys,
             selectedRows:selectedRows,
+        })
+    }
+
+    //清除选择的行
+    cleanSelectedRows = () => {
+        this.selectTableRow([],[])
+        this.setState({
+            totalInvoiceAmount:[]
         })
     }
 
@@ -233,7 +311,7 @@ export default class PubStatementTable extends Component{
     }
 
     render(){
-        const {selectedRowKeys,selectedRows } = this.state;
+        const {selectedRowKeys,selectedRows,totalInvoiceAmount } = this.state;
         const {dataList,total,pageSize,pageCurrent,headerInfo} = this.props.pubStatement;
         const loading = this.props.loading;
         const rowSelection = {
@@ -504,7 +582,7 @@ export default class PubStatementTable extends Component{
                             {
                                 this.state.showGenerateInvoiveOption?(
                                     <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
-                                        <Option value="3">Generate Invoice</Option>
+                                        <Option value="3">Package Statement</Option>
                                     </Select>
                                 ):null
                             }
@@ -520,6 +598,35 @@ export default class PubStatementTable extends Component{
                         </Form>
                     </Col>
                 </Row>
+                {
+                    userRole.indexOf('admin') > -1?
+                    <Alert
+                        style={{marginBottom:"5px"}}
+                        message={
+                        <Fragment>
+                            Selected 
+                            <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> 
+                            Campaigns&nbsp;&nbsp; Total Invoice Amount:&nbsp;
+                            {totalInvoiceAmount.map((item,index)=> (
+                            <span style={{ marginLeft: 8 }} key={index}>
+                                <span style={{ fontWeight: 600 }}>
+                                    {item.total? item.total + " " +item.type:null}
+                                </span>
+                            </span>
+                            ))}
+                            {
+                                selectedRows.length?
+                                <a onClick={this.cleanSelectedRows} style={{ marginLeft: 24 }}>
+                                    Clear Select
+                                </a>:''
+                            }
+                        </Fragment>
+                        }
+                        type="info"
+                        showIcon
+                    />:
+                    null
+                }
                 <Table 
                     size="small"
                     rowSelection={rowSelection}

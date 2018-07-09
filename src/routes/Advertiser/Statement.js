@@ -225,7 +225,6 @@ export default class AdvStatement extends Component {
     cleanSelectedRows = () => {
         this.selectTableRow([],[])
         this.setState({
-            selectedRows:[],
             totalInvoiceAmount:[]
         })
     }
