@@ -143,6 +143,11 @@ export async function queryPubStatement(params) {
     return request(`/api/pubStatement?${stringify(params)}`);
 }
 
+//publisher invoice record接口
+export async function queryPubInvRecord(params) {
+    return request(`/api/pubInvRecord?${stringify(params)}`);
+}
+
 //公用 智能搜索 campaign
 export async function queryCampaign(params) {
     return request(`/api/campaign?${stringify(params)}`);

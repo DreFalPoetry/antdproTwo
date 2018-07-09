@@ -339,6 +339,27 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    //pubInvRecord接口
+    'GET /api/pubInvRecord':mockjs.mock({
+        'code':0,
+        'data|50': [{ 
+            'affiliateId|+1':7001, 
+            'affiliateName': '@name',
+            'campaignMonth':'@date',
+            'invoiceAmount|100-200.2':123,
+            'currency':'USD',
+            'invoiceDate':'@date',
+            'billingTerm':'90',
+            'DueOn':'@date',
+            'Payer':'MocaTechnology',
+            'publisherInv':'Invoice内容',
+            'released|200-300':212,
+            'dateOnReleased':'@date'
+        }],
+        'total':50,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
     'GET /api/campaign':mockjs.mock({
         'code':0,
         'data|30': [{

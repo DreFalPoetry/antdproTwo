@@ -94,7 +94,7 @@ export const getRouterData = app => {
         component: dynamicWrapper(app, ['advReport','advStatement','pubStatement'], () => import('../routes/Publisher/statement/index')),
     },
     '/publisher/pubInvRec': {
-        component: dynamicWrapper(app, ['advReport','advInvRecord'], () => import('../routes/Publisher/InoviceRecord')),
+        component: dynamicWrapper(app, ['advReport','pubInvRecord'], () => import('../routes/Publisher/InoviceRecord')),
     },
     '/user': {
       component: dynamicWrapper(app, [], () => import('../layouts/UserLayout')),

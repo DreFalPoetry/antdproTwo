@@ -13,10 +13,10 @@ const RadioGroup = Radio.Group;
 const Option = Select.Option;
 
 @Form.create()
-@connect(({ advReport,advInvRecord,loading }) => ({
+@connect(({ advReport,pubInvRecord,loading }) => ({
     advReport,
-    advInvRecord,
-    loading: loading.effects['advInvRecord/fetch'],  
+    pubInvRecord,
+    loading: loading.effects['pubInvRecord/fetch'],  
 }))
 export default class PubInvRecord extends Component {
     constructor(props) {
@@ -38,47 +38,38 @@ export default class PubInvRecord extends Component {
             tempRecord:{}
         };
         this.columns = [{
-                title: 'Advertiser Name',
-                dataIndex: 'advName',
+                title: 'Affiliate ID & Name',
+                dataIndex: 'affiliateId',
             },{
                 title: 'Campaign Month',
-                dataIndex: 'campMonth',
+                dataIndex: 'campaignMonth',
             },{
                 title: 'Invoice Amount',
-                dataIndex: 'amount'
+                dataIndex: 'invoiceAmount'
             },{
                 title: 'Currency',
                 dataIndex: 'currency',
             },{
-                title: 'System Invoice No.',
-                dataIndex: 'sysInvNo',
-            },{
-                title: 'Actual Invoice No.',
-                dataIndex: 'actInvNo',
-            },{
                 title: 'Invoice Date',
-                dataIndex: 'invDate',
+                dataIndex: 'invoiceDate',
             },{
                 title: 'Billing Term',
-                dataIndex: 'billTerm',
+                dataIndex: 'billingTerm',
             },{
                 title: 'Due On',
-                dataIndex: 'dueOn',
+                dataIndex: 'DueOn',
             },{
-                title: 'Due To',
-                dataIndex: 'payTo',
+                title: 'Payer',
+                dataIndex: 'Payer',
             },{
-                title: 'Collected Amount',
-                dataIndex: 'collecAmount',
+                title: 'Publisher Invoice',
+                dataIndex: 'publisherInv',
             },{
-                title: 'Date on Collection',
-                dataIndex: 'dataOnColl',
+                title: 'Released',
+                dataIndex: 'released',
             },{
-                title: 'Bad Debt',
-                dataIndex: 'badDebt',
-            },{
-                title: 'Remark',
-                dataIndex: 'remark',
+                title: 'Date on Released',
+                dataIndex: 'dateOnReleased',
             },{
                 title: '',
                 dataIndex: '',
@@ -90,7 +81,7 @@ export default class PubInvRecord extends Component {
 
     componentDidMount() {
         this.props.dispatch({
-            type: 'advInvRecord/fetch',
+            type: 'pubInvRecord/fetch',
             payload:{
                 pageCurrent:this.state.pageCurrent,
                 pageSize:this.state.pageSize
@@ -100,7 +91,7 @@ export default class PubInvRecord extends Component {
 
     componentWillUnmount() {
         this.props.dispatch({
-            type:'advInvRecord/clear'
+            type:'pubInvRecord/clear'
         })
     }
 
@@ -111,7 +102,7 @@ export default class PubInvRecord extends Component {
         .then(json => {
             let result = JSON.parse(json);
             if(result.code == 0){
-                const {dataList} = this.props.advInvRecord;
+                const {dataList} = this.props.pubInvRecord;
                 let tempDataList = deepCloneObj(dataList);
                 tempDataList.forEach(function(item,ind){
                     if(item.uniqueKey==record.uniqueKey){
@@ -119,7 +110,7 @@ export default class PubInvRecord extends Component {
                     }
                 });
                 this.props.dispatch({
-                    type:'advInvRecord/asyncDataList',
+                    type:'pubInvRecord/asyncDataList',
                     payload: tempDataList,
                 })
                 message.success('save');
@@ -138,7 +129,7 @@ export default class PubInvRecord extends Component {
                     pageCurrent:1
                 },function(){
                     this.props.dispatch({
-                        type:'advInvRecord/fetch',
+                        type:'pubInvRecord/fetch',
                         payload:{
                             ...this.state.tableQuery,
                             pageCurrent:this.state.pageCurrent,
@@ -182,7 +173,7 @@ export default class PubInvRecord extends Component {
             response.then(res => {return res;})
             .then(json => {
                 if(json.code == 0){
-                    const {dataList} = this.props.advInvRecord;
+                    const {dataList} = this.props.pubInvRecord;
                     let tempDataList = deepCloneObj(dataList);
                     tempDataList.forEach(function(item,ind){
                         if(item.uniqueKey==record.uniqueKey){
@@ -190,7 +181,7 @@ export default class PubInvRecord extends Component {
                         }
                     });
                     this.props.dispatch({
-                        type:'advInvRecord/asyncDataList',
+                        type:'pubInvRecord/asyncDataList',
                         payload: tempDataList,
                     })
                     message.success('save');
@@ -292,7 +283,7 @@ export default class PubInvRecord extends Component {
             }
         },function(){
             this.props.dispatch({
-                type: 'advInvRecord/fetch',
+                type: 'pubInvRecord/fetch',
                 payload:{
                     ...this.state.tableQuery,
                     pageCurrent:this.state.pageCurrent,
@@ -308,7 +299,7 @@ export default class PubInvRecord extends Component {
             pageCurrent:1
         },function(){
             this.props.dispatch({
-                type: 'advInvRecord/fetch',
+                type: 'pubInvRecord/fetch',
                 payload:{
                    ...this.state.tableQuery,
                    pageSize:this.state.pageSize,
@@ -323,7 +314,7 @@ export default class PubInvRecord extends Component {
             pageCurrent:page
         },function(){
             this.props.dispatch({
-                type: 'advInvRecord/fetch',
+                type: 'pubInvRecord/fetch',
                 payload:{
                    ...this.state.tableQuery,
                    pageSize:this.state.pageSize,
@@ -334,7 +325,7 @@ export default class PubInvRecord extends Component {
     }
 
     render() {
-        const {dataList,total,pageSize,pageCurrent} = this.props.advInvRecord;
+        const {dataList,total,pageSize,pageCurrent} = this.props.pubInvRecord;
         const {employeeList,advAccountList} = this.props.advReport;
         const { getFieldDecorator } = this.props.form;
         const {loading} = this.props;
@@ -414,6 +405,7 @@ export default class PubInvRecord extends Component {
                         columns={this.columns} 
                         dataSource={dataList} 
                         rowKey="uniqueKey"
+                        size="small"
                         loading={loading}
                         pagination={{
                             defaultCurrent:1,
@@ -426,7 +418,6 @@ export default class PubInvRecord extends Component {
                             onChange:this.pageChange
                         }}
                         bordered
-                        scroll={{ x: 1500 }}
                     />
                     </Card>
                 </PageHeaderLayout>
