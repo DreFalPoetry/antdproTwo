@@ -41,7 +41,7 @@ export default class GenerateInvoiceModal extends Component {
 
     //关闭modal
     closeModal = () => {
-
+        this.props.changeModalVisible(false);
     }
 
     //提交表单数据

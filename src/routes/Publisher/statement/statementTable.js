@@ -30,12 +30,16 @@ export default class PubStatementTable extends Component{
             currencyEditble:[],
             cellCurrencys:[],
             deductedReasonEditble:[],
+            statusEditble:[],
+            cellSelectedStatus:[],
             attachModalVisible:false,
             rowOperates:[],
+            showGeInvModal:false,
             //关于row的多选的操作
             showGenerateInvoiveOption:false,
             showApproveOrRejectOption:false,
-            totalInvoiceAmount:[]
+            totalInvoiceAmount:[],
+            selectOperVal:undefined
         };
     }
 
@@ -69,7 +73,7 @@ export default class PubStatementTable extends Component{
         let rowStatus = [];
         selectedRows.map((item) => {
             if(item.currency && item.invoiceAmount){
-                rowStatus.push({status:item.finApproStatus,currency:item.currency});
+                rowStatus.push({status:item.status,currency:item.currency});
             }
             if(item.currency == "USD"){  
                 totalInvoiceAmount.push({'type':item.currency,"total":Number(item.invoiceAmount)})
@@ -100,10 +104,10 @@ export default class PubStatementTable extends Component{
             let apprOrRej = true;
             let theSameCurrency = true;
             rowStatus.map((item,index,arr)=>{
-                if(item.status != '1'){
+                if(item.status != '2'){
                     gerInv = false;
                 }
-                if(item.status != '0'){
+                if(item.status != '1'){
                     apprOrRej = false;
                 }
                 let firstCurrency = arr[0].currency;
@@ -230,6 +234,15 @@ export default class PubStatementTable extends Component{
         })
     }
 
+    //选择当前行的状态
+    selectCellStatus = (index,value) => {
+        let tempCellStatus = deepCloneObj(this.state.cellSelectedStatus);
+        tempCellStatus[index] = value;
+        this.setState({
+            cellSelectedStatus:tempCellStatus
+        })
+    }
+
     //返回状态对应的文字
     showStatusWord = (status) => {
         switch(status){
@@ -305,9 +318,25 @@ export default class PubStatementTable extends Component{
         })
     }
 
-    //row批量选择操作
+    //row批量选择后进行的合并操作
     selectOption = (value) => {
         console.log(value);
+        this.setState({
+            selectOperVal:value
+        })
+        if(value == 4){
+            this.setState({
+                showGeInvModal:true
+            })
+        }
+    }
+
+    //改变generInvModalVisible
+    changeModalVisible = (visible) => {
+        this.setState({
+            showGeInvModal:visible,
+            selectOperVal:undefined
+        })
     }
 
     render(){
@@ -317,9 +346,9 @@ export default class PubStatementTable extends Component{
         const rowSelection = {
             selectedRowKeys:selectedRowKeys,
             onChange:this.selectTableRow,
-            // getCheckboxProps:(record)=>{
-            //     return {disabled:(record.finApproStatus == '3' || record.finApproStatus == '2')}
-            // }
+            getCheckboxProps:(record)=>{
+                return {disabled:(record.status == '3' || record.status == '4')}
+            }
         };
         const userRoles = sessionStorage.getItem('userRole');
         const userRole = userRoles.split(',');
@@ -525,8 +554,38 @@ export default class PubStatementTable extends Component{
         },{
             title: 'Status',
             dataIndex: 'status',
-            render:(index) => {
-                return this.showStatusWord(index);
+            render:(text,record,index) => {
+                if(userRole.indexOf('admin') > -1){//用户角色为财务
+                    return (
+                        !this.state.statusEditble[index]?
+                        <div className={commonStyle.editableCellIconWrapper}>
+                            {this.showStatusWord(Number(text)) || ' '}
+                            <Icon
+                                type="edit"
+                                className={commonStyle.editableCellIcon}
+                                onClick={this.editCellValue.bind(this,index,'statusEditble')}
+                            />
+                        </div>:
+                        <div>
+                            <Select size="small" 
+                                value={this.state.cellSelectedStatus[index]||String(text)||undefined} 
+                                placeholder='Select Status To Apply'
+                                style={{ width: 100,marginRight:5 }} 
+                                onChange={this.selectCellStatus.bind(this,index)}>
+                                    <Option value="0">Inital</Option>
+                                    <Option value="1">Pending-Audit</Option>
+                                    <Option value="2">Approved</Option>
+                                    <Option value="3">Rejected</Option>
+                                    <Option value="4">Packaged</Option>
+                            </Select>
+                            <Button type='primary' size='small' 
+                                onClick={this.sureCellInput.bind(this,index,record,'status','cellSelectedStatus','statusEditble')}>Sure
+                            </Button>
+                        </div>
+                    )
+                }else{
+                    return  this.showStatusWord(Number(text)) || '';
+                }
             }
         },{
             title: '',
@@ -581,16 +640,19 @@ export default class PubStatementTable extends Component{
                             <FormItem label="Batch Actions">
                             {
                                 this.state.showGenerateInvoiveOption?(
-                                    <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
-                                        <Option value="3">Package Statement</Option>
+                                    <Select style={{ width: 230 }} 
+                                    value={this.state.selectOperVal}
+                                            onChange={this.selectOption} 
+                                            placeholder="Choose and Apply">
+                                        <Option value="4">Package Statement</Option>
                                     </Select>
                                 ):null
                             }
                             {
                                 this.state.showApproveOrRejectOption?(
                                     <Select style={{ width: 230 }} onChange={this.selectOption} placeholder="Choose and Apply">
-                                        <Option value="1">Approve</Option>
-                                        <Option value="2">Reject</Option>
+                                        <Option value="2">Approve</Option>
+                                        <Option value="3">Reject</Option>
                                     </Select>
                                 ):null
                             }
@@ -649,7 +711,7 @@ export default class PubStatementTable extends Component{
                         <div>{headerInfo.total} campaigns，已开票{headerInfo.invoiced}个，Rejected{headerInfo.rejected}个，Approved未开票{headerInfo.approved}个</div>
                     )}
                 />
-                <GenerateInvoiceModal/> 
+                <GenerateInvoiceModal visible={this.state.showGeInvModal} changeModalVisible={this.changeModalVisible}/> 
             </Fragment>
         )
     }
