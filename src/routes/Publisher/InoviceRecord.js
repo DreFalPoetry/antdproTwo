@@ -5,8 +5,9 @@ import styles from '../Advertiser/Report.less';
 import PubCollectModal from './PubCollectModal';
 import { connect } from 'dva';
 import moment from 'moment';
-import {deleteAdvInvRecord,advInvRecordUpdate} from '../../services/api';
+import {deleteAdvInvRecord,advInvRecordUpdate,queryPubInvRecordInfo} from '../../services/api';
 import{deepCloneObj} from '../../utils/commonFunc';
+import { async } from 'rxjs/internal/scheduler/async';
 const FormItem = Form.Item;
 const { MonthPicker } = DatePicker;
 const RadioGroup = Radio.Group;
@@ -324,6 +325,60 @@ export default class PubInvRecord extends Component {
         })
     }
 
+    expandedRowRender = (record) =>{
+        const detailColumns = [{
+            title: 'remark',
+            dataIndex: 'remark',
+        },{
+            title: 'releasedAmt',
+            dataIndex: 'released_amt',
+        },{
+            title: 'releaseDate',
+            dataIndex: 'release_date',
+        },{
+            title: '',
+            dataIndex: '',
+        }];
+        return  (
+            <div>
+                <Table
+                    showHeader={false}
+                    columns={detailColumns}
+                    dataSource={record.detailData}
+                    rowKey="uniqueKey"
+                    pagination={false}
+                />
+            </div>  
+        )
+    }
+
+     //每行下的详细记录数据信息请求
+    onExpand = (expanded,record) => {
+        if(expanded){
+            const response = queryPubInvRecordInfo('10001');
+            response.then(res => {return res;})
+            .then(json => {
+                if(json.code == 0){
+                    const  detailData = json.data;
+                    detailData.filter((item,index)=>{
+                        item.uniqueKey = index+1;
+                    })
+                    const {dataList} = this.props.pubInvRecord;
+                    let tempDataList = deepCloneObj(dataList);
+                    tempDataList.filter((item,index,arr)=>{
+                        if(item.uniqueKey == record.uniqueKey){
+                            item.detailData = detailData;
+                        }
+                    });
+                    this.props.dispatch({
+                        type: 'pubInvRecord/asyncDataList',
+                        payload:tempDataList
+                    })
+                }
+            })
+        }
+    }
+
     render() {
         const {dataList,total,pageSize,pageCurrent} = this.props.pubInvRecord;
         const {employeeList,advAccountList} = this.props.advReport;
@@ -403,6 +458,8 @@ export default class PubInvRecord extends Component {
                     </div>
                     <Table 
                         columns={this.columns} 
+                        expandedRowRender={this.expandedRowRender}
+                        onExpand = {this.onExpand}
                         dataSource={dataList} 
                         rowKey="uniqueKey"
                         size="small"

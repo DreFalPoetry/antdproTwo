@@ -360,6 +360,21 @@ const proxy = {
         'pageSize':20,
         'pageCurrent':1
     }),
+    //每一个记录下的付款记录信息
+    'GET /api/pubInvRecord/10001/record':mockjs.mock({
+        'code':0,
+        'data|3': [{ 
+            "id|+1": 1,
+            "package_id": 1,
+            "created_at": "@date",
+            "released_amt|100-1000.2": 123.00,
+            "release_date": "@date",
+            "remark": "我是remark..."
+        }],
+        'total':50,
+        'pageSize':20,
+        'pageCurrent':1
+    }),
     'GET /api/campaign':mockjs.mock({
         'code':0,
         'data|30': [{

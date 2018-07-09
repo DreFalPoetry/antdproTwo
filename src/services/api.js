@@ -148,6 +148,11 @@ export async function queryPubInvRecord(params) {
     return request(`/api/pubInvRecord?${stringify(params)}`);
 }
 
+//publisher invoice 下的每条收款记录接口
+export async function queryPubInvRecordInfo(id) {
+    return request(`/api/pubInvRecord/${id}/record`);
+}
+
 //公用 智能搜索 campaign
 export async function queryCampaign(params) {
     return request(`/api/campaign?${stringify(params)}`);
