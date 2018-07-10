@@ -43,6 +43,8 @@ function checkStatus(response) {
  * @return {object}           An object containing either "data" or "err"
  */
 export default function request(url, options) {
+    const address = 'http://192.168.31.30:8080/app/mock' + url;
+	// const address = 'http://publisher.moca-tech.net' + url;
   const defaultOptions = {
     credentials: 'include',
   };
@@ -64,6 +66,7 @@ export default function request(url, options) {
     }
   }
 
+  //url--address
   return fetch(url, newOptions)
     .then(checkStatus)
     .then(response => {
